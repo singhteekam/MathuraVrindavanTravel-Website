@@ -1,0 +1,92 @@
+import { NextRequest } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { connectDB } from '@/lib/db'
+import Driver from '@/models/Driver'
+import { successResponse, errorResponse } from '@/lib/apiResponse'
+
+interface Params {
+  params: Promise<{ driverId: string }>
+}
+
+// GET /api/drivers/[driverId]
+export async function GET(_req: NextRequest, { params }: Params) {
+  try {
+    const session = await getServerSession(authOptions)
+    const user    = session?.user as { id?: string; role?: string } | undefined
+    if (!user) return errorResponse('Unauthorized.', 401)
+
+    const { driverId } = await params
+    await connectDB()
+
+    const driver = await Driver.findById(driverId).lean()
+    if (!driver) return errorResponse('Driver not found.', 404)
+
+    // Driver can only see their own profile; admin can see all
+    if (user.role !== 'admin' && driver.userId.toString() !== user.id) {
+      return errorResponse('Forbidden.', 403)
+    }
+
+    return successResponse(driver)
+  } catch (err) {
+    console.error('[GET /api/drivers/:id]', err)
+    return errorResponse('Internal server error.', 500)
+  }
+}
+
+// PATCH /api/drivers/[driverId] — driver updates availability; admin can verify
+export async function PATCH(req: NextRequest, { params }: Params) {
+  try {
+    const session = await getServerSession(authOptions)
+    const user    = session?.user as { id?: string; role?: string } | undefined
+    if (!user) return errorResponse('Unauthorized.', 401)
+
+    const { driverId } = await params
+    const body         = await req.json()
+
+    await connectDB()
+
+    const driver = await Driver.findById(driverId)
+    if (!driver) return errorResponse('Driver not found.', 404)
+
+    const isOwnProfile = driver.userId.toString() === user.id
+    const isAdmin      = user.role === 'admin'
+
+    if (!isOwnProfile && !isAdmin) return errorResponse('Forbidden.', 403)
+
+    // Driver can toggle availability and update vehicle info
+    if (isOwnProfile || isAdmin) {
+      if (body.isAvailable !== undefined) driver.isAvailable = body.isAvailable
+      if (body.vehicle)                   driver.vehicle     = { ...driver.vehicle, ...body.vehicle }
+    }
+
+    // Admin-only fields
+    if (isAdmin) {
+      if (body.isVerified !== undefined)  driver.isVerified  = body.isVerified
+    }
+
+    await driver.save()
+    return successResponse(driver)
+  } catch (err) {
+    console.error('[PATCH /api/drivers/:id]', err)
+    return errorResponse('Internal server error.', 500)
+  }
+}
+
+// DELETE /api/drivers/[driverId] — admin only
+export async function DELETE(_req: NextRequest, { params }: Params) {
+  try {
+    const session = await getServerSession(authOptions)
+    const user    = session?.user as { role?: string } | undefined
+    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+
+    const { driverId } = await params
+    await connectDB()
+
+    await Driver.findByIdAndDelete(driverId)
+    return successResponse({ message: 'Driver removed successfully.' })
+  } catch (err) {
+    console.error('[DELETE /api/drivers/:id]', err)
+    return errorResponse('Internal server error.', 500)
+  }
+}
