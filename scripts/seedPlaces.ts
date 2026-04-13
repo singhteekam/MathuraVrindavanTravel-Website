@@ -7,7 +7,12 @@
  * Make sure MONGODB_URI is set in .env.local before running.
  */
 
-import 'dotenv/config'
+// import 'dotenv/config'
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+config({ path: resolve(process.cwd(), '.env.local') })
+
 import mongoose from 'mongoose'
 import { ALL_PLACES } from '../data/places'
 

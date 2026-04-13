@@ -5,7 +5,12 @@
  *   npx tsx scripts/seedPackages.ts
  */
 
-import 'dotenv/config'
+// import 'dotenv/config'
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+config({ path: resolve(process.cwd(), '.env.local') })
+
 import mongoose from 'mongoose'
 import { ALL_PACKAGES, PACKAGE_DETAILS } from '../data/packages'
 

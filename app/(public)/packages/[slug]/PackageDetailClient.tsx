@@ -10,20 +10,21 @@ import {
 import { formatCurrency } from '@/lib/utils'
 import { siteConfig } from '@/config/site'
 
-interface ItineraryDay {
+// Self-contained interfaces — fully required fields on the detail page
+export interface ItineraryDay {
   day: number
   title: string
   description: string
   places: string[]
 }
 
-interface Pricing {
+export interface Pricing {
   carType: string
   carName: string
   price: number
 }
 
-interface PackageData {
+export interface PackageData {
   slug: string
   name: string
   duration: number
