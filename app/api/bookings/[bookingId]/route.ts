@@ -64,7 +64,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       const allowed = ['status', 'driver', 'adminNotes', 'paymentStatus', 'cancelReason']
       allowed.forEach((key) => {
         if (body[key] !== undefined) {
-          (booking as Record<string, unknown>)[key] = body[key]
+          // (booking as Record<string, unknown>)[key] = body[key]
+          booking.set('status', body.status)
+          booking.set('driver', body.driver)
         }
       })
     }

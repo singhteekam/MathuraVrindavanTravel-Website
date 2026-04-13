@@ -4,7 +4,7 @@ interface ISection {
   type: 'rich_text' | 'highlights' | 'travel_tips' | 'distances' | 'faq'
   title: string
   content?: string
-  items?: mongoose.Types.Mixed[]
+  items?: unknown[]
 }
 
 export interface IPlaceDoc extends Document {
