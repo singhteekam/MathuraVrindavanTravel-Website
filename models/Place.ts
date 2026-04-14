@@ -39,7 +39,7 @@ export interface IPlaceDoc extends Document {
 const PlaceSchema = new Schema<IPlaceDoc>(
   {
     name:             { type: String, required: true, trim: true },
-    slug:             { type: String, required: true, unique: true, lowercase: true, trim: true },
+    slug:             { type: String, required: true, lowercase: true, trim: true },
     city:             { type: String, required: true, trim: true },
     type:             { type: String, required: true },
     shortDescription: { type: String, required: true },

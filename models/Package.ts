@@ -41,7 +41,7 @@ export interface IPackageDoc extends Document {
 const PackageSchema = new Schema<IPackageDoc>(
   {
     name:             { type: String, required: true, trim: true },
-    slug:             { type: String, required: true, unique: true, lowercase: true, trim: true },
+    slug:             { type: String, required: true, lowercase: true, trim: true },
     duration:         { type: Number, required: true },
     nights:           { type: Number, required: true, default: 0 },
     cities:           [{ type: String, trim: true }],

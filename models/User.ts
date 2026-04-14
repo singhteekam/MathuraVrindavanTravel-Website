@@ -16,7 +16,7 @@ export interface IUserDoc extends Document {
 const UserSchema = new Schema<IUserDoc>(
   {
     name:          { type: String, required: true, trim: true },
-    email:         { type: String, required: true, unique: true, lowercase: true, trim: true },
+    email:         { type: String, required: true, lowercase: true, trim: true },
     phone:         { type: String, required: true, trim: true },
     password:      { type: String, select: false },   // excluded by default
     role:          { type: String, enum: ['customer', 'driver', 'admin'], default: 'customer' },

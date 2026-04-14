@@ -39,7 +39,7 @@ export interface IBookingDoc extends Document {
 
 const BookingSchema = new Schema<IBookingDoc>(
   {
-    bookingId:       { type: String, required: true, unique: true },
+    bookingId:       { type: String, required: true },
     customer:        { type: Schema.Types.ObjectId, ref: 'User', required: true },
     package:         { type: Schema.Types.ObjectId, ref: 'Package' },
     driver:          { type: Schema.Types.ObjectId, ref: 'Driver' },
