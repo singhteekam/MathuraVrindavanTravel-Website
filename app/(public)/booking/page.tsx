@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -72,58 +74,14 @@ function BookingForm() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-async function handleConfirm() {
-  setLoading(true)
-  try {
-    // Calculate end date from start date + duration
-    const start  = new Date(travelDate)
-    const end    = new Date(start)
-    end.setDate(end.getDate() + durationData.days - 1)
-
-    const res = await fetch('/api/bookings', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        packageId:       selectedPackage || undefined,
-        carType:         selectedCar,
-        carName:         carData.name,
-        startDate:       travelDate,
-        endDate:         end.toISOString().split('T')[0],
-        duration:        durationData.days,
-        pickupLocation,
-        totalPassengers: Number(passengers),
-        totalAmount:     totalPrice,
-        advanceAmount:   Math.round(totalPrice * 0.3),
-        addons:          selectedAddons,
-        specialRequests: requests || undefined,
-        customerName:    name,
-        customerPhone:   phone,
-        customerEmail:   email || undefined,
-      }),
-    })
-
-    const data = await res.json()
-
-    if (!res.ok) {
-      toast.error(data.error ?? 'Booking failed. Please try again.')
-      return
-    }
-
-    toast.success(
-      `Booking confirmed! ID: ${data.data.bookingId}. Our team will call you within 30 minutes. Jai Shri Krishna 🙏`,
-      { duration: 6000 }
-    )
-
-    // Redirect to confirmation page
-    window.location.href = `/booking/confirmation?id=${data.data.bookingId}`
-
-  } catch (err) {
-    console.error(err)
-    toast.error('Something went wrong. Please call us directly.')
-  } finally {
+  async function handleConfirm() {
+    setLoading(true)
+    // TODO: call /api/bookings POST endpoint
+    await new Promise((r) => setTimeout(r, 1500))
+    toast.success('Booking confirmed! Our team will call you within 30 minutes. Jai Shri Krishna 🙏')
     setLoading(false)
+    // TODO: redirect to /booking/confirmation?id=...
   }
-}
 
   return (
     <div className="min-h-screen bg-gray-50">
