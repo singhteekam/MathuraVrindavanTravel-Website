@@ -21,11 +21,6 @@ const nextConfig = {
   // experimental: {
   //   serverComponentsExternalPackages: ['mongoose'],
   // },
-  // Silence Mongoose "Critical dependency" warnings at build time
-  webpack: (config: any) => {
-    config.externals = [...(config.externals || []), 'mongoose']
-    return config
-  },
 }
  
 module.exports = nextConfig
