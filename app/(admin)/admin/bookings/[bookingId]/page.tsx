@@ -231,7 +231,7 @@ export default function AdminBookingDetailPage() {
             <div className="flex items-center gap-4 mb-4">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold"
                 style={{ background: 'linear-gradient(135deg, #ff7d0f, #c74a06)' }}>
-                {booking.customer.name.charAt(0).toUpperCase()}
+                {booking.customer?.name?.charAt(0).toUpperCase() || "U"}
               </div>
               <div>
                 <p className="font-bold text-gray-900">{booking.customer.name}</p>
@@ -248,7 +248,7 @@ export default function AdminBookingDetailPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <a href={`https://wa.me/${booking.customer.phone.replace(/\D/g, '')}?text=Namaste! Regarding your booking ${booking.bookingId} — `}
+              <a href={`https://wa.me/${booking.customer?.phone?.replace(/\D/g, '')}?text=Namaste! Regarding your booking ${booking.bookingId} — `}
                 target="_blank" rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold"
                 style={{ background: '#dcfce7', color: '#16a34a' }}>
@@ -332,7 +332,7 @@ export default function AdminBookingDetailPage() {
               <div className="flex items-center gap-3 p-3 rounded-xl mb-3"
                 style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
                 <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center font-bold text-green-700 text-sm flex-shrink-0">
-                  {booking.driver.name.charAt(0)}
+                  {booking.driver?.name?.charAt(0) || "D"}
                 </div>
                 <div>
                   <p className="text-xs font-bold text-gray-800">{booking.driver.name}</p>
