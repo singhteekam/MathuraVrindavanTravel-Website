@@ -27,7 +27,7 @@ interface Booking {
   pickupLocation:  string
   totalPassengers: number
   addons:          string[]
-  package?:        { name: string; slug: string }
+  package?:        { _id: string; name: string; slug: string }
   driver?:         { name: string; phone: string; vehicle: { name: string; number: string } }
 }
 
@@ -275,7 +275,8 @@ export default function CustomerPage() {
                           <MessageCircle size={12} />WhatsApp
                         </a>
                         {booking.status === 'completed' && (
-                          <Link href={`/packages/${booking.package?.slug ?? ''}`}
+                          <Link
+                            href={`/review?booking=${encodeURIComponent(booking._id)}&package=${encodeURIComponent(booking.package?._id ?? '')}&name=${encodeURIComponent(booking.package?.name ?? booking.carName)}`}
                             className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl whitespace-nowrap"
                             style={{ background: '#fff8ed', color: '#ff7d0f' }}>
                             <Star size={12} />Leave Review

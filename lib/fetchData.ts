@@ -155,12 +155,26 @@ export const getFeaturedPackages = unstable_cache(
   async (): Promise<PackageSummary[]> => {
     await connectDB()
     const PackageModel = (await import('@/models/Package')).default
-    const docs = await PackageModel
+
+    // First try packages explicitly marked as featured
+    let docs = await PackageModel
       .find({ isActive: true, isFeatured: true })
       .sort({ totalBookings: -1, duration: 1 })
       .limit(8)
       .select('-itinerary -inclusions -exclusions')
       .lean()
+
+    // Fallback: if no featured packages exist yet (e.g. fresh seed without isFeatured set),
+    // return all active packages sorted by popularity so the homepage is never empty
+    if (docs.length === 0) {
+      docs = await PackageModel
+        .find({ isActive: true })
+        .sort({ isPopular: -1, totalBookings: -1, duration: 1 })
+        .limit(8)
+        .select('-itinerary -inclusions -exclusions')
+        .lean()
+    }
+
     return docs.map((d) => ser<PackageSummary>(d as Record<string, unknown>))
   },
   ['featured-packages'],
