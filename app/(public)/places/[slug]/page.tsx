@@ -1,38 +1,43 @@
-import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { ALL_PLACES } from '@/data/places'
-import PlaceDetailClient from './PlaceDetailClient'
+import type { Metadata }   from 'next'
+import { notFound }        from 'next/navigation'
+import PlaceDetailClient   from './PlaceDetailClient'
+import { getPlaceBySlug, getAllPlaces, getAllPlaceSlugs } from '@/lib/fetchData'
 
 interface Props {
   params: Promise<{ slug: string }>
 }
 
-// Pre-build all 50+ place pages at build time
 export async function generateStaticParams() {
-  return ALL_PLACES.map((p) => ({ slug: p.slug }))
+  const slugs = await getAllPlaceSlugs()
+  return slugs.map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const place = ALL_PLACES.find((p) => p.slug === slug)
+  const place    = await getPlaceBySlug(slug)
   if (!place) return { title: 'Place Not Found' }
   return {
-    title: `${place.name} — ${place.city} | Mathura Vrindavan Travel`,
+    title:       `${place.name} \u2014 Mathura Vrindavan Travel`,
     description: place.shortDescription,
-    openGraph: {
-      title: place.name,
-      description: place.shortDescription,
-    },
+    openGraph:   { title: place.name, description: place.shortDescription },
   }
 }
 
+export const revalidate = 3600
+
 export default async function PlaceDetailPage({ params }: Props) {
   const { slug } = await params
-  const place = ALL_PLACES.find((p) => p.slug === slug)
+
+  // Fetch full place detail + all places (for related section) in parallel
+  const [place, allPlaces] = await Promise.all([
+    getPlaceBySlug(slug),
+    getAllPlaces(),
+  ])
+
   if (!place) notFound()
 
-  // Related places — same city, different slug
-  const related = ALL_PLACES
+  // Related: same city, different slug, max 3
+  const related = allPlaces
     .filter((p) => p.city === place.city && p.slug !== place.slug)
     .slice(0, 3)
 

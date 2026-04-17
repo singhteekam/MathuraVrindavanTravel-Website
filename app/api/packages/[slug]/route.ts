@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { connectDB } from '@/lib/db'
 import Package from '@/models/Package'
+import { revalidateTag }  from 'next/cache'
 import { successResponse, errorResponse } from '@/lib/apiResponse'
 
 interface Params {
@@ -44,6 +45,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     )
 
     if (!pkg) return errorResponse('Package not found.', 404)
+    revalidateTag('packages', 'default')
     return successResponse(pkg)
   } catch (err) {
     console.error('[PUT /api/packages/:slug]', err)
@@ -62,6 +64,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     await connectDB()
 
     await Package.findOneAndUpdate({ slug }, { isActive: false })
+    revalidateTag('packages', 'default')
     return successResponse({ message: 'Package deactivated.' })
   } catch (err) {
     console.error('[DELETE /api/packages/:slug]', err)

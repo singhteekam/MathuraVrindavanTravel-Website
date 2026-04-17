@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { connectDB } from '@/lib/db'
 import Package from '@/models/Package'
+import { revalidateTag }  from 'next/cache'
 import { successResponse, errorResponse, paginatedResponse } from '@/lib/apiResponse'
 
 // GET /api/packages — public, supports filters
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
     await connectDB()
 
     const pkg = await Package.create(body)
+    revalidateTag('packages', 'default')
     return successResponse(pkg, 201)
   } catch (err: unknown) {
     if ((err as { code?: number }).code === 11000) {

@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, MapPin } from 'lucide-react'
 import PlaceCard from '@/components/shared/PlaceCard'
-import { type Place } from '@/data/places'
+import type { PlaceSummary } from '@/lib/fetchData'
 import { cn } from '@/lib/utils'
 
 const CITIES = ['All', 'Mathura', 'Vrindavan', 'Gokul', 'Govardhan', 'Barsana']
@@ -18,7 +18,7 @@ const TYPES = [
   { value: 'garden',      label: 'Gardens',      emoji: '🌺' },
 ]
 
-export default function PlacesClient({ places }: { places: Place[] }) {
+export default function PlacesClient({ places }: { places: PlaceSummary[] }) {
   const [search,    setSearch]    = useState('')
   const [city,      setCity]      = useState('All')
   const [type,      setType]      = useState('all')

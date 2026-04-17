@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { connectDB } from '@/lib/db'
 import Place from '@/models/Place'
+import { revalidateTag }  from 'next/cache'
 import { successResponse, errorResponse, paginatedResponse } from '@/lib/apiResponse'
 
 // GET /api/places — public
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
     await connectDB()
 
     const place = await Place.create(body)
+    revalidateTag('places', 'default')
     return successResponse(place, 201)
   } catch (err: unknown) {
     if ((err as { code?: number }).code === 11000) {

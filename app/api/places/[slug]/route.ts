@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { connectDB } from '@/lib/db'
 import Place from '@/models/Place'
+import { revalidateTag }  from 'next/cache'
 import { successResponse, errorResponse } from '@/lib/apiResponse'
 
 interface Params {
@@ -44,6 +45,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     )
 
     if (!place) return errorResponse('Place not found.', 404)
+    revalidateTag('places', 'default')
     return successResponse(place)
   } catch (err) {
     console.error('[PUT /api/places/:slug]', err)
@@ -64,6 +66,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     const place = await Place.findOneAndDelete({ slug })
     if (!place) return errorResponse('Place not found.', 404)
 
+    revalidateTag('places', 'default')
     return successResponse({ message: 'Place deleted successfully.' })
   } catch (err) {
     console.error('[DELETE /api/places/:slug]', err)

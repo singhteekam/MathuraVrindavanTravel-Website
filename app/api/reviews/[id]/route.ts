@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { connectDB } from '@/lib/db'
 import Review from '@/models/Review'
+import { revalidateTag }        from 'next/cache'
 import { recalcPackageRating } from '@/lib/reviewUtils'
 import { successResponse, errorResponse } from '@/lib/apiResponse'
 
@@ -35,6 +36,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       await recalcPackageRating(review.package)
     }
 
+    revalidateTag('reviews', 'default')
+    revalidateTag('reviews', 'default')
+    revalidateTag('packages', 'default')  // package ratings updated
     return successResponse({
       review,
       message: isApproved ? 'Review approved and published.' : 'Review unpublished.',
@@ -63,6 +67,8 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
       await recalcPackageRating(review.package)
     }
 
+    revalidateTag('reviews', 'default')
+    revalidateTag('packages', 'default')
     return successResponse({ message: 'Review deleted.' })
   } catch (err) {
     console.error('[DELETE /api/reviews/:id]', err)

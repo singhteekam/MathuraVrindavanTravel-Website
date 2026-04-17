@@ -6,7 +6,7 @@ import {
   MapPin, Clock, Ticket, ChevronRight,
   Phone, Calendar, ArrowLeft, Share2,
 } from 'lucide-react'
-import { type Place, type PlaceSection } from '@/data/places'
+import type { PlaceDetail, PlaceSummary, PlaceSection } from '@/lib/fetchData'
 import PlaceCard from '@/components/shared/PlaceCard'
 import { siteConfig } from '@/config/site'
 
@@ -151,8 +151,8 @@ function SectionRenderer({ section }: { section: PlaceSection }) {
 
 // ── Main component ────────────────────────────────────────
 interface Props {
-  place: Place
-  related: Place[]
+  place:   PlaceDetail
+  related: PlaceSummary[]
 }
 
 export default function PlaceDetailClient({ place, related }: Props) {

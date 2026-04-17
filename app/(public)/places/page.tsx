@@ -1,17 +1,20 @@
 import type { Metadata } from 'next'
-import { ALL_PLACES } from '@/data/places'
-import PlacesClient from './PlacesClient'
+import PlacesClient       from './PlacesClient'
+import { getAllPlaces }    from '@/lib/fetchData'
 
 export const metadata: Metadata = {
-  title: 'Places to Visit in Mathura & Vrindavan',
-  description:
-    'Explore 50+ sacred temples, ghats, and divine places in Mathura, Vrindavan, Gokul, Govardhan and Barsana. Detailed timings, entry fees, travel tips.',
+  title:       'Sacred Places \u2014 Mathura Vrindavan Travel',
+  description: 'Explore 50+ sacred temples, ghats, and spiritual sites in Mathura, Vrindavan, Govardhan and Barsana.',
   openGraph: {
-    title: 'Sacred Places — Mathura Vrindavan Travel',
-    description: 'Explore 50+ temples, ghats and sacred sites in Braj Bhoomi.',
+    title:       'Sacred Places of Braj \u2014 Mathura Vrindavan Travel',
+    description: 'Complete guide to temples, ghats & sacred sites of the holy land.',
   },
 }
 
-export default function PlacesPage() {
-  return <PlacesClient places={ALL_PLACES} />
+// Places data rarely changes — cache 1 hour
+export const revalidate = 3600
+
+export default async function PlacesPage() {
+  const places = await getAllPlaces()
+  return <PlacesClient places={places} />
 }

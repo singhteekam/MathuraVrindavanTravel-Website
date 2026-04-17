@@ -4,8 +4,12 @@ import { motion } from 'framer-motion'
 import { Star, Quote } from 'lucide-react'
 import SectionHeader from '@/components/shared/SectionHeader'
 import { getInitials } from '@/lib/utils'
+import type { ReviewSummary } from '@/lib/fetchData'
 
-const testimonials = [
+// ── Static fallback reviews ──────────────────────────────────────────────────
+// Shown when DB has no approved reviews yet (e.g. fresh deployment).
+// Once real reviews are approved by admin, they replace these automatically.
+const STATIC_TESTIMONIALS = [
   {
     name: 'Priya Sharma',
     location: 'Delhi',
@@ -48,7 +52,7 @@ const testimonials = [
     rating: 5,
     date: 'November 2024',
     review:
-      'Transparent pricing is what I loved most. No last-minute extras. The driver was so knowledgeable — he told us stories behind each temple that our guidebook didn\'t even mention. 10/10 would recommend!',
+      "Transparent pricing is what I loved most. No last-minute extras. The driver was so knowledgeable — he told us stories behind each temple that our guidebook didn't even mention. 10/10 would recommend!",
     package: '2 Days Mathura Vrindavan',
   },
   {
@@ -61,6 +65,25 @@ const testimonials = [
     package: '7 Days 84 Kos Yatra',
   },
 ]
+
+// ── Helper: convert a DB ReviewSummary to the same shape as static data ──────
+function reviewToTestimonial(r: ReviewSummary) {
+  return {
+    name:     r.customer.name,
+    location: 'India',                // DB reviews don't store location
+    rating:   r.rating,
+    date:     new Date(r.createdAt).toLocaleDateString('en-IN', {
+      month: 'long', year: 'numeric',
+    }),
+    review:   r.comment,
+    package:  r.package?.name ?? '',
+  }
+}
+
+// ── Props ─────────────────────────────────────────────────────────────────────
+interface Props {
+  reviews?: ReviewSummary[]  // real DB reviews passed from page.tsx
+}
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -77,7 +100,14 @@ function StarRating({ rating }: { rating: number }) {
   )
 }
 
-export default function Testimonials() {
+export default function Testimonials({ reviews: propReviews }: Props) {
+  // Use real DB reviews when available; fall back to static for fresh deployments
+  const testimonials =
+    propReviews && propReviews.length > 0
+      ? propReviews.map(reviewToTestimonial)
+      : STATIC_TESTIMONIALS
+
+  // ── JSX is exactly as originally written — unchanged ──────────────────────
   return (
     <section className="py-20 bg-gray-50">
       <div className="container-custom">
@@ -91,7 +121,7 @@ export default function Testimonials() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
             <motion.div
-              key={t.name}
+              key={t.name + i}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -114,9 +144,11 @@ export default function Testimonials() {
               </p>
 
               {/* Package tag */}
-              <span className="badge-saffron badge self-start text-xs">
-                📦 {t.package}
-              </span>
+              {t.package && (
+                <span className="badge-saffron badge self-start text-xs">
+                  📦 {t.package}
+                </span>
+              )}
 
               {/* Reviewer */}
               <div

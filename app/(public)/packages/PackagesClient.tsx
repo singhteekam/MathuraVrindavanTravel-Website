@@ -5,20 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Search, SlidersHorizontal, X, ChevronDown } from 'lucide-react'
 import PackageCard from '@/components/shared/PackageCard'
 import { cn } from '@/lib/utils'
+import type { PackageSummary } from '@/lib/fetchData'
 
-type Package = {
-  slug: string
-  name: string
-  duration: number
-  nights: number
-  cities: string[]
-  basePrice: number
-  rating: number
-  totalReviews: number
-  isPopular: boolean
-  highlights: string[]
-  shortDescription: string
-}
+// Use the shared PackageSummary type from fetchData so server + client always agree
+type Package = PackageSummary
 
 const DURATION_TABS = [
   { label: 'All',     min: 0,  max: 99 },

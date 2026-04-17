@@ -42,9 +42,20 @@ export interface PackageData {
   pricing: Pricing[]
 }
 
-const TABS = ['Overview', 'Itinerary', 'Pricing', 'Inclusions']
+const TABS = ['Overview', 'Itinerary', 'Pricing', 'Inclusions', 'Reviews']
 
-export default function PackageDetailClient({ pkg }: { pkg: PackageData }) {
+// ReviewItem matches ReviewSummary from fetchData.ts exactly
+export interface ReviewItem {
+  _id:       string
+  rating:    number
+  title:     string
+  comment:   string
+  createdAt: string
+  customer:  { name: string }
+  package?:  { name: string; slug: string }
+}
+
+export default function PackageDetailClient({ pkg, reviews = [] }: { pkg: PackageData; reviews?: ReviewItem[] }) {
   const [activeTab,    setActiveTab]    = useState('Overview')
   const [selectedCar,  setSelectedCar]  = useState(pkg.pricing[0]?.carType ?? '')
   const [expandedDay,  setExpandedDay]  = useState<number | null>(1)
@@ -424,6 +435,84 @@ export default function PackageDetailClient({ pkg }: { pkg: PackageData }) {
                   </ul>
                 </div>
               </div>
+            </motion.div>
+          )}
+          {/* ── Reviews tab ── */}
+          {activeTab === 'Reviews' && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900"
+                    style={{ fontFamily: 'var(--font-serif)' }}>
+                    Customer Reviews
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    {reviews.length > 0
+                      ? `${reviews.length} verified review${reviews.length !== 1 ? 's' : ''} from real customers`
+                      : 'Be the first to review this package'}
+                  </p>
+                </div>
+                {pkg.rating > 0 && (
+                  <div className="text-center">
+                    <p className="text-4xl font-bold" style={{ color: '#f59e0b' }}>
+                      {pkg.rating.toFixed(1)}
+                    </p>
+                    <div className="flex gap-0.5 justify-center my-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} size={14}
+                          fill={i < Math.round(pkg.rating) ? '#f59e0b' : 'none'}
+                          stroke={i < Math.round(pkg.rating) ? '#f59e0b' : '#d1d5db'} />
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-400">{pkg.totalReviews} reviews</p>
+                  </div>
+                )}
+              </div>
+
+              {reviews.length === 0 ? (
+                <div className="text-center py-12 rounded-2xl"
+                  style={{ background: '#f9fafb' }}>
+                  <p className="text-4xl mb-3">⭐</p>
+                  <p className="text-gray-500 font-medium">No reviews yet</p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Book this package and share your experience!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <div key={review._id} className="card rounded-2xl p-5">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                            style={{ background: 'linear-gradient(135deg, #ff7d0f, #c74a06)' }}
+                          >
+                            {review.customer.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900 text-sm">{review.customer.name}</p>
+                            <p className="text-xs text-gray-400">
+                              {new Date(review.createdAt).toLocaleDateString('en-IN', {
+                                month: 'long', year: 'numeric',
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-0.5 flex-shrink-0">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} size={13}
+                              fill={i < review.rating ? '#f59e0b' : 'none'}
+                              stroke={i < review.rating ? '#f59e0b' : '#d1d5db'} />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="font-semibold text-gray-800 text-sm mb-1">{review.title}</p>
+                      <p className="text-gray-600 text-sm leading-relaxed">{review.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
         </div>
