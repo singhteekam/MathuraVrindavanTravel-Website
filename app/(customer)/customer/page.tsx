@@ -45,9 +45,10 @@ const TABS = ['All', 'Upcoming', 'Completed', 'Cancelled']
 export default function CustomerPage() {
   const { data: session, status } = useSession()
   const router                    = useRouter()
-  const [bookings, setBookings]   = useState<Booking[]>([])
-  const [loading,  setLoading]    = useState(true)
-  const [activeTab,setActiveTab]  = useState('All')
+  const [bookings,         setBookings]         = useState<Booking[]>([])
+  const [reviewedBookings, setReviewedBookings] = useState<Set<string>>(new Set())
+  const [loading,          setLoading]          = useState(true)
+  const [activeTab,        setActiveTab]        = useState('All')
 
   const user = session?.user as { name?: string; email?: string; role?: string } | undefined
 
@@ -58,9 +59,23 @@ export default function CustomerPage() {
 
   useEffect(() => {
     if (status !== 'authenticated') return
-    fetch('/api/bookings?limit=50')
-      .then((r) => r.json())
-      .then((d) => { if (d.success) setBookings(d.data) })
+    Promise.all([
+      fetch('/api/bookings?limit=50').then((r) => r.json()),
+      fetch('/api/reviews?myReviews=true&limit=100').then((r) => r.json()),
+    ])
+      .then(([bData, rData]) => {
+        if (bData.success) setBookings(bData.data)
+        if (rData.success) {
+          // Build a Set of booking _ids that already have a review
+          const ids = new Set<string>(
+            rData.data.map((r: { booking?: string | { _id?: string } }) => {
+              if (typeof r.booking === 'string') return r.booking
+              return r.booking?._id ?? ''
+            }).filter(Boolean)
+          )
+          setReviewedBookings(ids)
+        }
+      })
       .catch(() => toast.error('Failed to load bookings.'))
       .finally(() => setLoading(false))
   }, [status])
@@ -275,12 +290,21 @@ export default function CustomerPage() {
                           <MessageCircle size={12} />WhatsApp
                         </a>
                         {booking.status === 'completed' && (
-                          <Link
-                            href={`/review?booking=${encodeURIComponent(booking._id)}&package=${encodeURIComponent(booking.package?._id ?? '')}&name=${encodeURIComponent(booking.package?.name ?? booking.carName)}`}
-                            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl whitespace-nowrap"
-                            style={{ background: '#fff8ed', color: '#ff7d0f' }}>
-                            <Star size={12} />Leave Review
-                          </Link>
+                          reviewedBookings.has(booking._id)
+                            ? (
+                              <span
+                                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl whitespace-nowrap"
+                                style={{ background: '#f0fdf4', color: '#16a34a' }}>
+                                <Star size={12} fill="currentColor" />Reviewed ✓
+                              </span>
+                            ) : (
+                              <Link
+                                href={`/review?booking=${encodeURIComponent(booking._id)}&package=${encodeURIComponent(booking.package?._id ?? '')}&name=${encodeURIComponent(booking.package?.name ?? booking.carName)}`}
+                                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl whitespace-nowrap"
+                                style={{ background: '#fff8ed', color: '#ff7d0f' }}>
+                                <Star size={12} />Leave Review
+                              </Link>
+                            )
                         )}
                         {canCancel && (
                           <button

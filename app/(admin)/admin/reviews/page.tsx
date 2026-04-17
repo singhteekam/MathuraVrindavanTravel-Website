@@ -3,35 +3,57 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
-import { Star, Check, X, RefreshCw, MessageSquare } from 'lucide-react'
-import toast from 'react-hot-toast'
+import { motion, AnimatePresence }           from 'framer-motion'
+import {
+  Star, Check, X, Trash2, RefreshCw,
+  MessageSquare, ThumbsUp, Clock, Filter,
+} from 'lucide-react'
+import toast           from 'react-hot-toast'
 import AdminPageHeader from '@/components/admin/AdminPageHeader'
 
 interface Review {
-  _id: string
-  rating: number
-  title: string
-  comment: string
+  _id:        string
+  rating:     number
+  title:      string
+  comment:    string
   isApproved: boolean
-  createdAt: string
-  customer: { name: string; email: string }
-  package?: { name: string; slug: string }
+  createdAt:  string
+  customer:   { name: string; email: string }
+  package?:   { name: string; slug: string }
+}
+
+type FilterStatus = 'pending' | 'approved' | 'all'
+
+function StarDisplay({ count }: { count: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star key={i} size={13}
+          fill={i < count ? '#f59e0b' : 'none'}
+          stroke={i < count ? '#f59e0b' : '#d1d5db'} />
+      ))}
+    </div>
+  )
 }
 
 export default function AdminReviewsPage() {
-  const [reviews,  setReviews]  = useState<Review[]>([])
-  const [loading,  setLoading]  = useState(true)
-  const [filter,   setFilter]   = useState<'all' | 'pending' | 'approved'>('pending')
+  const [reviews,      setReviews]      = useState<Review[]>([])
+  const [loading,      setLoading]      = useState(true)
+  const [filter,       setFilter]       = useState<FilterStatus>('pending')
+  const [ratingFilter, setRatingFilter] = useState<number | null>(null)
+  const [deletingId,   setDeletingId]   = useState<string | null>(null)
+  const [actionId,     setActionId]     = useState<string | null>(null)
 
   const fetchReviews = useCallback(async () => {
     setLoading(true)
     try {
-      const res  = await fetch('/api/reviews?limit=50')
+      // ?all=true fetches both approved and pending reviews for admin
+      const res  = await fetch('/api/reviews?all=true&limit=100')
       const data = await res.json()
       if (data.success) setReviews(data.data)
+      else toast.error('Failed to load reviews.')
     } catch {
-      toast.error('Failed to load reviews.')
+      toast.error('Network error.')
     } finally {
       setLoading(false)
     }
@@ -39,44 +61,57 @@ export default function AdminReviewsPage() {
 
   useEffect(() => { fetchReviews() }, [fetchReviews])
 
+  // Apply status + rating filters
   const filtered = reviews.filter((r) => {
-    if (filter === 'pending')  return !r.isApproved
-    if (filter === 'approved') return r.isApproved
+    if (filter === 'pending'  && r.isApproved)  return false
+    if (filter === 'approved' && !r.isApproved) return false
+    if (ratingFilter !== null && r.rating !== ratingFilter) return false
     return true
   })
 
-  async function toggleApproval(id: string, current: boolean) {
+  // Counts
+  const pendingCount  = reviews.filter((r) => !r.isApproved).length
+  const approvedCount = reviews.filter((r) =>  r.isApproved).length
+
+  async function toggleApproval(review: Review) {
+    setActionId(review._id)
     try {
-      const res = await fetch(`/api/reviews/${id}`, {
+      const res = await fetch(`/api/reviews/${review._id}`, {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ isApproved: !current }),
+        body:    JSON.stringify({ isApproved: !review.isApproved }),
       })
       if (res.ok) {
-        toast.success(current ? 'Review unpublished.' : 'Review approved and published!')
-        fetchReviews()
+        toast.success(review.isApproved ? 'Review unpublished.' : 'Review approved and published! ⭐')
+        setReviews((prev) =>
+          prev.map((r) => r._id === review._id ? { ...r, isApproved: !r.isApproved } : r),
+        )
       } else {
         toast.error('Failed to update review.')
       }
     } catch {
       toast.error('Network error.')
+    } finally {
+      setActionId(null)
     }
   }
 
-  const pendingCount  = reviews.filter((r) => !r.isApproved).length
-  const approvedCount = reviews.filter((r) =>  r.isApproved).length
-
-  function StarRow({ count }: { count: number }) {
-    return (
-      <div className="flex gap-0.5">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Star key={i} size={13}
-            fill={i < count ? '#f59e0b' : 'none'}
-            stroke={i < count ? '#f59e0b' : '#d1d5db'}
-          />
-        ))}
-      </div>
-    )
+  async function deleteReview(id: string, customerName: string) {
+    if (!confirm(`Delete ${customerName}'s review? This cannot be undone.`)) return
+    setDeletingId(id)
+    try {
+      const res = await fetch(`/api/reviews/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        toast.success('Review deleted.')
+        setReviews((prev) => prev.filter((r) => r._id !== id))
+      } else {
+        toast.error('Failed to delete review.')
+      }
+    } catch {
+      toast.error('Network error.')
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   return (
@@ -85,7 +120,7 @@ export default function AdminReviewsPage() {
         title="Reviews"
         crumbs={[{ label: 'Reviews' }]}
         action={
-          <button onClick={fetchReviews}
+          <button type="button" onClick={fetchReviews}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
             <RefreshCw size={14} /> Refresh
           </button>
@@ -95,36 +130,75 @@ export default function AdminReviewsPage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         {[
-          { label: 'Total Reviews', value: reviews.length,  color: '#374151', bg: '#f9fafb' },
-          { label: 'Pending',       value: pendingCount,    color: '#d97706', bg: '#fffbeb' },
-          { label: 'Published',     value: approvedCount,   color: '#16a34a', bg: '#f0fdf4' },
+          { label: 'Total Reviews', value: reviews.length,  icon: <MessageSquare size={18} />, color: '#374151', bg: '#f9fafb' },
+          { label: 'Pending',       value: pendingCount,    icon: <Clock         size={18} />, color: '#d97706', bg: '#fffbeb' },
+          { label: 'Published',     value: approvedCount,   icon: <ThumbsUp      size={18} />, color: '#16a34a', bg: '#f0fdf4' },
         ].map((s) => (
-          <div key={s.label} className="card rounded-xl p-4 text-center" style={{ background: s.bg }}>
-            <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+          <div key={s.label} className="card rounded-2xl p-4 flex items-center gap-3"
+            style={{ background: s.bg }}>
+            <div style={{ color: s.color }}>{s.icon}</div>
+            <div>
+              <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
+              <p className="text-xs text-gray-500">{s.label}</p>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-2 mb-6">
-        {[
-          { value: 'pending',  label: `Pending (${pendingCount})`   },
-          { value: 'approved', label: `Published (${approvedCount})` },
-          { value: 'all',      label: `All (${reviews.length})`      },
-        ].map((tab) => (
-          <button key={tab.value}
-            onClick={() => setFilter(tab.value as typeof filter)}
-            className="px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200"
-            style={filter === tab.value
-              ? { background: '#ff7d0f', color: '#fff' }
-              : { background: '#fff', color: '#6b7280', border: '1px solid #e5e7eb' }
-            }>
-            {tab.label}
-          </button>
-        ))}
+      {/* Filters row */}
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        {/* Status filter */}
+        <div className="flex gap-2">
+          {([
+            { value: 'pending',  label: `Pending (${pendingCount})`    },
+            { value: 'approved', label: `Published (${approvedCount})` },
+            { value: 'all',      label: `All (${reviews.length})`      },
+          ] as { value: FilterStatus; label: string }[]).map((tab) => (
+            <button key={tab.value} type="button"
+              onClick={() => setFilter(tab.value)}
+              className="px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200"
+              style={filter === tab.value
+                ? { background: '#ff7d0f', color: '#fff' }
+                : { background: '#fff', color: '#6b7280', border: '1px solid #e5e7eb' }
+              }>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Rating filter */}
+        <div className="flex items-center gap-2 ml-auto">
+          <Filter size={13} className="text-gray-400" />
+          <div className="flex gap-1">
+            {[5, 4, 3, 2, 1].map((star) => (
+              <button key={star} type="button"
+                onClick={() => setRatingFilter(ratingFilter === star ? null : star)}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={ratingFilter === star
+                  ? { background: '#fef3c7', color: '#92400e', border: '1.5px solid #f59e0b' }
+                  : { background: '#fff', color: '#9ca3af', border: '1px solid #e5e7eb' }
+                }>
+                <Star size={11} fill={ratingFilter === star ? '#f59e0b' : 'none'}
+                  stroke={ratingFilter === star ? '#f59e0b' : 'currentColor'} />
+                {star}
+              </button>
+            ))}
+            {ratingFilter !== null && (
+              <button type="button" onClick={() => setRatingFilter(null)}
+                className="px-2 py-1.5 rounded-lg text-xs text-red-400 hover:text-red-600 border border-red-100">
+                <X size={11} />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
+      {/* Result count */}
+      <p className="text-xs text-gray-400 mb-4">
+        Showing {filtered.length} review{filtered.length !== 1 ? 's' : ''}
+      </p>
+
+      {/* Reviews list */}
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="w-7 h-7 border-4 border-saffron-400 border-t-transparent rounded-full animate-spin" />
@@ -132,80 +206,110 @@ export default function AdminReviewsPage() {
       ) : filtered.length === 0 ? (
         <div className="card rounded-2xl p-16 text-center">
           <MessageSquare size={40} className="text-gray-200 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">No {filter === 'all' ? '' : filter} reviews</p>
+          <p className="text-gray-500 font-medium">No reviews found</p>
+          <p className="text-xs text-gray-400 mt-1">
+            {filter === 'pending' ? 'All reviews have been actioned.' : 'Try a different filter.'}
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {filtered.map((review, i) => (
-            <motion.div
-              key={review._id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="card rounded-2xl p-5"
-              style={!review.isApproved ? { borderLeft: '3px solid #f59e0b' } : {}}
-            >
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  {/* Header */}
-                  <div className="flex flex-wrap items-center gap-3 mb-2">
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                      style={{ background: 'linear-gradient(135deg, #ff7d0f, #c74a06)' }}
-                    >
-                      {review.customer.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900 text-sm">{review.customer.name}</p>
-                      <p className="text-xs text-gray-400">{review.customer.email}</p>
-                    </div>
-                    <StarRow count={review.rating} />
-                    <span
-                      className="text-xs px-2.5 py-0.5 rounded-full font-semibold"
-                      style={review.isApproved
-                        ? { background: '#f0fdf4', color: '#16a34a' }
-                        : { background: '#fffbeb', color: '#d97706' }
-                      }>
-                      {review.isApproved ? 'Published' : 'Pending'}
-                    </span>
-                  </div>
+          <AnimatePresence>
+            {filtered.map((review, i) => (
+              <motion.div
+                key={review._id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="card rounded-2xl overflow-hidden"
+                style={!review.isApproved
+                  ? { borderLeft: '4px solid #f59e0b' }
+                  : { borderLeft: '4px solid #22c55e' }
+                }
+              >
+                <div className="p-5">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
 
-                  {/* Review content */}
-                  <p className="font-semibold text-gray-800 text-sm mb-1">{review.title}</p>
-                  <p className="text-sm text-gray-600 leading-relaxed mb-3">{review.comment}</p>
+                    {/* Left — review content */}
+                    <div className="flex-1 min-w-0">
+                      {/* Customer + rating row */}
+                      <div className="flex flex-wrap items-center gap-3 mb-3">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                          style={{ background: 'linear-gradient(135deg, #ff7d0f, #c74a06)' }}>
+                          {review.customer.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-gray-900 text-sm leading-tight">{review.customer.name}</p>
+                          <p className="text-xs text-gray-400 truncate">{review.customer.email}</p>
+                        </div>
+                        <StarDisplay count={review.rating} />
+                        <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold flex-shrink-0"
+                          style={review.isApproved
+                            ? { background: '#f0fdf4', color: '#16a34a' }
+                            : { background: '#fffbeb', color: '#d97706' }
+                          }>
+                          {review.isApproved ? '✓ Published' : '⏳ Pending'}
+                        </span>
+                      </div>
 
-                  {/* Meta */}
-                  <div className="flex flex-wrap gap-3 text-xs text-gray-400">
-                    {review.package && (
-                      <span className="px-2.5 py-1 rounded-full"
-                        style={{ background: '#f3f4f6' }}>
-                        {review.package.name}
-                      </span>
-                    )}
-                    <span>{new Date(review.createdAt).toLocaleDateString('en-IN', {
-                      day: 'numeric', month: 'short', year: 'numeric',
-                    })}</span>
+                      {/* Review text */}
+                      <p className="font-semibold text-gray-800 text-sm mb-1">{review.title}</p>
+                      <p className="text-sm text-gray-600 leading-relaxed mb-3">{review.comment}</p>
+
+                      {/* Meta */}
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400">
+                        {review.package && (
+                          <span className="px-2.5 py-1 rounded-full"
+                            style={{ background: '#fff8ed', color: '#c74a06' }}>
+                            📦 {review.package.name}
+                          </span>
+                        )}
+                        <span>
+                          {new Date(review.createdAt).toLocaleDateString('en-IN', {
+                            day: 'numeric', month: 'short', year: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Right — action buttons */}
+                    <div className="flex sm:flex-col gap-2 flex-shrink-0">
+                      {/* Approve / Unpublish */}
+                      <button type="button"
+                        onClick={() => toggleApproval(review)}
+                        disabled={actionId === review._id}
+                        className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap disabled:opacity-60"
+                        style={review.isApproved
+                          ? { background: '#fff1f2', color: '#dc2626' }
+                          : { background: '#f0fdf4', color: '#16a34a' }
+                        }>
+                        {actionId === review._id ? (
+                          <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        ) : review.isApproved ? (
+                          <><X size={13} /> Unpublish</>
+                        ) : (
+                          <><Check size={13} /> Approve</>
+                        )}
+                      </button>
+
+                      {/* Delete */}
+                      <button type="button"
+                        onClick={() => deleteReview(review._id, review.customer.name)}
+                        disabled={deletingId === review._id}
+                        className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap disabled:opacity-60"
+                        style={{ background: '#f9fafb', color: '#6b7280', border: '1px solid #e5e7eb' }}>
+                        {deletingId === review._id ? (
+                          <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <><Trash2 size={13} /> Delete</>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-                {/* Action buttons */}
-                <div className="flex sm:flex-col gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => toggleApproval(review._id, review.isApproved)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap"
-                    style={review.isApproved
-                      ? { background: '#fff1f2', color: '#dc2626' }
-                      : { background: '#f0fdf4', color: '#16a34a' }
-                    }>
-                    {review.isApproved
-                      ? <><X size={12} /> Unpublish</>
-                      : <><Check size={12} /> Approve</>
-                    }
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       )}
     </div>
