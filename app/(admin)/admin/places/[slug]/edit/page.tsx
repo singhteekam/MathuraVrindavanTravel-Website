@@ -9,6 +9,7 @@ import { Save, Plus, X, ArrowLeft, AlertCircle } from 'lucide-react'
 import Link  from 'next/link'
 import toast from 'react-hot-toast'
 import AdminPageHeader from '@/components/admin/AdminPageHeader'
+import ImageManager    from '@/components/admin/ImageManager'
 
 interface PlaceForm {
   name:             string
@@ -17,6 +18,8 @@ interface PlaceForm {
   shortDescription: string
   entryFee:         string
   timeRequired:     string
+  thumbnail:        string
+  images:           string[]
   isFeatured:       boolean
   tags:             string[]
   timings: {
@@ -55,6 +58,8 @@ export default function EditPlacePage() {
             shortDescription: p.shortDescription ?? '',
             entryFee:         p.entryFee         ?? 'Free',
             timeRequired:     p.timeRequired     ?? '30-60 minutes',
+            thumbnail:        p.thumbnail        ?? '',
+            images:           p.images           ?? [],
             isFeatured:       p.isFeatured       ?? false,
             tags:             p.tags             ?? [],
             timings: {
@@ -270,6 +275,20 @@ export default function EditPlacePage() {
                 </div>
               </div>
             </div>
+          </motion.div>
+
+          {/* Images */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
+            className="card rounded-2xl p-5">
+            <h3 className="font-bold text-gray-900 mb-1">Photo Gallery</h3>
+            <p className="text-xs text-gray-400 mb-4">Upload photos via Cloudinary. First image is used as the main thumbnail on cards.</p>
+            <ImageManager
+              images={form.images}
+              onChange={(imgs) => setForm({ ...form, images: imgs, thumbnail: imgs[0] ?? '' })}
+              folder="places"
+              maxImages={8}
+              label="Place Photos"
+            />
           </motion.div>
 
           {/* Tags */}

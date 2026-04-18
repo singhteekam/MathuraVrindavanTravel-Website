@@ -8,7 +8,9 @@ import {
 } from 'lucide-react'
 import type { PlaceDetail, PlaceSummary, PlaceSection } from '@/lib/fetchData'
 import PlaceCard from '@/components/shared/PlaceCard'
-import { siteConfig } from '@/config/site'
+import { siteConfig }   from '@/config/site'
+import ImageGallery    from '@/components/shared/ImageGallery'
+import { getPlaceImageSrc } from '@/lib/imageUtils'
 
 // ── Type emojis ──────────────────────────────────────────
 const TYPE_EMOJI: Record<string, string> = {
@@ -347,6 +349,22 @@ export default function PlaceDetailClient({ place, related }: Props) {
 
           {/* Content area — flexible sections */}
           <div className="lg:col-span-2">
+
+            {/* Image Gallery — shown when place has photos */}
+            {(place.images?.filter(Boolean).length > 0 || place.thumbnail) && (
+              <div className="mb-8">
+                <ImageGallery
+                  images={
+                    place.images?.filter(Boolean).length > 0
+                      ? place.images
+                      : place.thumbnail ? [place.thumbnail] : []
+                  }
+                  name={place.name}
+                  type={place.type}
+                />
+              </div>
+            )}
+
             {place.sections.map((section, i) => (
               <motion.div
                 key={i}

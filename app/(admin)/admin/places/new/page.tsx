@@ -9,6 +9,7 @@ import { Save, Plus, X, ArrowLeft, MapPin } from 'lucide-react'
 import Link                  from 'next/link'
 import toast                 from 'react-hot-toast'
 import AdminPageHeader        from '@/components/admin/AdminPageHeader'
+import ImageManager           from '@/components/admin/ImageManager'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const CITIES = ['Mathura', 'Vrindavan', 'Gokul', 'Govardhan', 'Barsana', 'Nandgaon', 'Agra']
@@ -34,6 +35,8 @@ interface PlaceForm {
   description:      string
   entryFee:         string
   timeRequired:     string
+  thumbnail:        string
+  images:           string[]
   isFeatured:       boolean
   tags:             string[]
   timings: {
@@ -58,6 +61,8 @@ const INITIAL_FORM: PlaceForm = {
   description:      '',
   entryFee:         'Free',
   timeRequired:     '30-60 minutes',
+  thumbnail:        '',
+  images:           [],
   isFeatured:       false,
   tags:             [],
   timings:          { morning: '', evening: '', note: '' },
@@ -398,6 +403,21 @@ export default function NewPlacePage() {
                   </div>
                 </div>
               </div>
+            </motion.div>
+
+            {/* Images */}
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.14 }}
+              className="card rounded-2xl p-5">
+              <h3 className="font-bold text-gray-900 mb-1">Photo Gallery</h3>
+              <p className="text-xs text-gray-400 mb-4">Upload place photos via Cloudinary. First image becomes the main thumbnail on cards and homepage.</p>
+              <ImageManager
+                images={form.images}
+                onChange={(imgs) => setForm((prev) => ({ ...prev, images: imgs, thumbnail: imgs[0] ?? '' }))}
+                folder="places"
+                maxImages={8}
+                label="Place Photos"
+              />
             </motion.div>
 
             {/* Tags */}

@@ -9,6 +9,7 @@ import { Save, Plus, X, ArrowLeft, AlertCircle } from 'lucide-react'
 import Link  from 'next/link'
 import toast from 'react-hot-toast'
 import AdminPageHeader from '@/components/admin/AdminPageHeader'
+import ImageManager    from '@/components/admin/ImageManager'
 import { cars } from '@/config/site'
 
 interface PackageForm {
@@ -21,8 +22,10 @@ interface PackageForm {
   highlights:       string[]
   inclusions:       string[]
   exclusions:       string[]
-  isActive:         boolean
-  isFeatured:       boolean
+  thumbnail:  string
+  images:     string[]
+  isActive:   boolean
+  isFeatured: boolean
   isPopular:        boolean
   pricing:          { carType: string; carName: string; price: number }[]
 }
@@ -50,6 +53,8 @@ export default function EditPackagePage() {
             highlights:       p.highlights?.length ? p.highlights : [''],
             inclusions:       p.inclusions?.length ? p.inclusions : [''],
             exclusions:       p.exclusions?.length ? p.exclusions : [''],
+            thumbnail:        p.thumbnail  ?? '',
+            images:           p.images     ?? [],
             isActive:         p.isActive   ?? true,
             isFeatured:       p.isFeatured ?? false,
             isPopular:        p.isPopular  ?? false,
@@ -254,6 +259,20 @@ export default function EditPackagePage() {
                 </div>
               ))}
             </div>
+          </motion.div>
+
+          {/* Images */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
+            className="card rounded-2xl p-5">
+            <h3 className="font-bold text-gray-900 mb-1">Photo Gallery</h3>
+            <p className="text-xs text-gray-400 mb-4">Upload package/tour photos via Cloudinary. First image is the main thumbnail shown on cards and the homepage.</p>
+            <ImageManager
+              images={form.images}
+              onChange={(imgs) => setForm({ ...form, images: imgs, thumbnail: imgs[0] ?? '' })}
+              folder="packages"
+              maxImages={6}
+              label="Package Photos"
+            />
           </motion.div>
 
           {/* Lists */}
