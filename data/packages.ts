@@ -16,6 +16,7 @@ export interface PackageData {
   isPopular:        boolean
   isFeatured:       boolean  // controls homepage display
   isActive:         boolean  // controls visibility on site
+  thumbnail?:       string   // /images/packages/{slug}.jpg
   highlights:       string[]
   shortDescription: string
   pricing?:         PackagePricing[]
@@ -24,6 +25,7 @@ export interface PackageData {
 export const ALL_PACKAGES: PackageData[] = [
   {
     slug: 'same-day-mathura-vrindavan',
+    thumbnail: '/images/packages/same-day-mathura-vrindavan.jpg',
     name: 'Same Day Mathura Vrindavan Tour',
     duration: 1, nights: 0,
     cities: ['Mathura', 'Vrindavan'],
@@ -45,6 +47,7 @@ export const ALL_PACKAGES: PackageData[] = [
   },
   {
     slug: '2-days-mathura-vrindavan',
+    thumbnail: '/images/packages/2-days-mathura-vrindavan.jpg',
     name: '2 Days Mathura Vrindavan Darshan',
     duration: 2, nights: 1,
     cities: ['Mathura', 'Vrindavan'],
@@ -66,6 +69,7 @@ export const ALL_PACKAGES: PackageData[] = [
   },
   {
     slug: '3-days-mathura-vrindavan-govardhan',
+    thumbnail: '/images/packages/3-days-mathura-vrindavan-govardhan.jpg',
     name: '3 Days Goverdhan Parikrama Package',
     duration: 3, nights: 2,
     cities: ['Mathura', 'Vrindavan', 'Govardhan'],
@@ -87,6 +91,7 @@ export const ALL_PACKAGES: PackageData[] = [
   },
   {
     slug: '3-days-mathura-vrindavan-agra',
+    thumbnail: '/images/packages/3-days-mathura-vrindavan-agra.jpg',
     name: '3 Days Mathura Vrindavan + Agra',
     duration: 3, nights: 2,
     cities: ['Mathura', 'Vrindavan', 'Agra'],
@@ -108,6 +113,7 @@ export const ALL_PACKAGES: PackageData[] = [
   },
   {
     slug: '4-days-mathura-vrindavan',
+    thumbnail: '/images/packages/4-days-mathura-vrindavan.jpg',
     name: '4 Days Complete Braj Pilgrimage',
     duration: 4, nights: 3,
     cities: ['Mathura', 'Vrindavan', 'Gokul', 'Govardhan'],
@@ -129,6 +135,7 @@ export const ALL_PACKAGES: PackageData[] = [
   },
   {
     slug: '4-days-mathura-vrindavan-bharatpur',
+    thumbnail: '/images/packages/4-days-mathura-vrindavan-bharatpur.jpg',
     name: '4 Days Mathura Tour + Bharatpur',
     duration: 4, nights: 3,
     cities: ['Mathura', 'Vrindavan', 'Bharatpur'],
@@ -150,6 +157,7 @@ export const ALL_PACKAGES: PackageData[] = [
   },
   {
     slug: '7-days-braj-84-kos-yatra',
+    thumbnail: '/images/packages/7-days-braj-84-kos-yatra.jpg',
     name: '7 Days Shri Braj 84 Kos Yatra',
     duration: 7, nights: 6,
     cities: ['Mathura', 'Vrindavan', 'Govardhan', 'Barsana'],
@@ -169,6 +177,7 @@ export const ALL_PACKAGES: PackageData[] = [
   },
   {
     slug: '8-days-braj-84-kos-yatra',
+    thumbnail: '/images/packages/8-days-braj-84-kos-yatra.jpg',
     name: '8 Days Shri Braj 84 Kos Yatra',
     duration: 8, nights: 7,
     cities: ['Mathura', 'Vrindavan', 'Govardhan', 'Barsana', 'Nandgaon'],

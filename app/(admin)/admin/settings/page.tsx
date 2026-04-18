@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Save, Phone, Mail, Globe, Eye, EyeOff,
   CheckCircle, AlertCircle,
@@ -96,6 +96,35 @@ export default function AdminSettingsPage() {
     emailNotify:       true,
   })
 
+  const [loadingSettings, setLoadingSettings] = useState(true)
+
+  // ── Load saved settings from MongoDB on mount ──────────────────────────────
+  useEffect(() => {
+    fetch('/api/admin/settings')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          const s = data.data
+          // Hydrate siteInfo from DB if available
+          if (s.siteInfo && Object.keys(s.siteInfo).length > 0) {
+            setSiteInfo((prev) => ({ ...prev, ...s.siteInfo }))
+          }
+          // Hydrate emailConfig from DB (only non-sensitive fields)
+          if (s.emailConfig && Object.keys(s.emailConfig).length > 0) {
+            setEmailConfig((prev) => ({ ...prev, ...s.emailConfig }))
+          }
+          // Hydrate bookingConfig from DB
+          if (s.bookingConfig && Object.keys(s.bookingConfig).length > 0) {
+            setBookingConfig((prev) => ({ ...prev, ...s.bookingConfig }))
+          }
+        }
+      })
+      .catch(() => {
+        // Settings not yet saved — use defaults silently
+      })
+      .finally(() => setLoadingSettings(false))
+  }, [])
+
   async function handleSave() {
     setSaving(true)
     setError('')
@@ -142,6 +171,31 @@ export default function AdminSettingsPage() {
       )}
     </button>
   )
+
+  if (loadingSettings) {
+    return (
+      <div className="flex-1 p-6 lg:p-8 pt-20 lg:pt-8 overflow-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <div className="h-7 w-32 bg-gray-100 rounded-lg animate-pulse mb-2" />
+            <div className="h-4 w-48 bg-gray-50 rounded animate-pulse" />
+          </div>
+          <div className="h-10 w-32 bg-gray-100 rounded-xl animate-pulse" />
+        </div>
+        <div className="max-w-2xl space-y-5">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="card rounded-2xl p-6 animate-pulse">
+              <div className="h-5 w-40 bg-gray-100 rounded mb-4" />
+              <div className="space-y-3">
+                <div className="h-10 bg-gray-50 rounded-xl" />
+                <div className="h-10 bg-gray-50 rounded-xl" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 p-6 lg:p-8 pt-20 lg:pt-8 overflow-auto">

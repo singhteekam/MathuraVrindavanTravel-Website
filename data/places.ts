@@ -39,7 +39,8 @@ export const ALL_PLACES: Place[] = [
     type: 'temple',
     shortDescription:
       'The holiest site in all of Braj — the sacred birthplace of Lord Krishna, visited by millions of devotees from around the world every year.',
-    images: [],
+    thumbnail: '/images/places/krishna-janmabhoomi.jpg',
+    images: ['/images/places/krishna-janmabhoomi.jpg'],
     location: {
       address: 'Krishna Janmabhoomi, Mathura, Uttar Pradesh 281001',
       lat: 27.5036,
@@ -114,7 +115,8 @@ export const ALL_PLACES: Place[] = [
     type: 'temple',
     shortDescription:
       'One of the most magnificent temples in Mathura, dedicated to Lord Krishna in his form as King of Dwarka — famous for its vibrant architecture and festivals.',
-    images: [],
+    thumbnail: '/images/places/dwarkadhish-temple.jpg',
+    images: ['/images/places/dwarkadhish-temple.jpg'],
     location: {
       address: 'Dwarkadhish Temple, Vishram Ghat Road, Mathura 281001',
       lat: 27.5015,
@@ -176,7 +178,8 @@ export const ALL_PLACES: Place[] = [
     type: 'ghat',
     shortDescription:
       'The holiest ghat on the Yamuna river — where Lord Krishna rested after defeating Kansa. The evening aarti here is one of the most spiritually charged experiences in all of India.',
-    images: [],
+    thumbnail: '/images/places/vishram-ghat.jpg',
+    images: ['/images/places/vishram-ghat.jpg'],
     location: {
       address: 'Vishram Ghat, Yamuna Bank, Mathura, Uttar Pradesh 281001',
       lat: 27.5012,
@@ -239,7 +242,8 @@ export const ALL_PLACES: Place[] = [
     type: 'temple',
     shortDescription:
       'A magnificent temple with the entire Bhagavad Gita inscribed on its walls — a unique spiritual landmark built by the Birla family in stunning white marble.',
-    images: [],
+    thumbnail: '/images/places/gita-mandir.jpg',
+    images: ['/images/places/gita-mandir.jpg'],
     location: {
       address: 'Gita Mandir Road, Mathura, Uttar Pradesh 281001',
       lat: 27.4881,
@@ -300,7 +304,8 @@ export const ALL_PLACES: Place[] = [
     type: 'temple',
     shortDescription:
       'The most beloved temple in Vrindavan — where the divine presence of Thakur Banke Bihari Ji is so powerful that the curtain is drawn every few minutes to protect devotees from overwhelming divine energy.',
-    images: [],
+    thumbnail: '/images/places/banke-bihari-temple.jpg',
+    images: ['/images/places/banke-bihari-temple.jpg'],
     location: {
       address: 'Banke Bihari Temple Road, Vrindavan, Uttar Pradesh 281121',
       lat: 27.5799,
@@ -373,7 +378,8 @@ export const ALL_PLACES: Place[] = [
     type: 'temple',
     shortDescription:
       'A grand white marble temple that transforms into a glowing spectacle of colored lights every evening — depicting the divine love of Radha and Krishna through intricate carvings.',
-    images: [],
+    thumbnail: '/images/places/prem-mandir.jpg',
+    images: ['/images/places/prem-mandir.jpg'],
     location: {
       address: 'Raman Reti, Vrindavan, Uttar Pradesh 281121',
       lat: 27.5654,
@@ -437,7 +443,8 @@ export const ALL_PLACES: Place[] = [
     type: 'temple',
     shortDescription:
       'The International Society for Krishna Consciousness temple — known for its melodious kirtans, peaceful atmosphere, and the majestic Krishna-Balaram deities.',
-    images: [],
+    thumbnail: '/images/places/iskcon-vrindavan.jpg',
+    images: ['/images/places/iskcon-vrindavan.jpg'],
     location: {
       address: 'Bhaktivedanta Swami Marg, Raman Reti, Vrindavan 281121',
       lat: 27.5672,
@@ -500,7 +507,8 @@ export const ALL_PLACES: Place[] = [
     type: 'sacred-site',
     shortDescription:
       'One of the most mysterious and sacred sites in Vrindavan — a forest where Lord Krishna is believed to perform the Raas Leela every night, leaving evidence of divine presence by morning.',
-    images: [],
+    thumbnail: '/images/places/nidhivan.jpg',
+    images: ['/images/places/nidhivan.jpg'],
     location: {
       address: 'Nidhivan, Vrindavan, Uttar Pradesh 281121',
       lat: 27.5812,
@@ -560,7 +568,8 @@ export const ALL_PLACES: Place[] = [
     type: 'sacred-site',
     shortDescription:
       'A tranquil garden adjacent to Nidhivan where Krishna performed the eternal Raas Leela with Radha and the gopis — radiating a peace that is felt even today.',
-    images: [],
+    thumbnail: '/images/places/seva-kunj.jpg',
+    images: ['/images/places/seva-kunj.jpg'],
     location: {
       address: 'Seva Kunj, Vrindavan, Uttar Pradesh 281121',
       lat: 27.5810,
@@ -599,7 +608,8 @@ export const ALL_PLACES: Place[] = [
     type: 'sacred-site',
     shortDescription:
       'The sacred sandy playground of Gokul where Lord Krishna spent His divine childhood — the soft golden sand is considered holy, and devotees roll in it as an act of devotion.',
-    images: [],
+    thumbnail: '/images/places/raman-reti.jpg',
+    images: ['/images/places/raman-reti.jpg'],
     location: {
       address: 'Raman Reti, Gokul, Uttar Pradesh 281303',
       lat: 27.4711,
@@ -661,7 +671,8 @@ export const ALL_PLACES: Place[] = [
     type: 'hill',
     shortDescription:
       'The sacred hill that Lord Krishna lifted on His little finger to shelter the people of Braj from Indra\'s wrath — the 21 km Govardhan Parikrama is one of the most spiritually powerful walks in India.',
-    images: [],
+    thumbnail: '/images/places/govardhan-hill.jpg',
+    images: ['/images/places/govardhan-hill.jpg'],
     location: {
       address: 'Govardhan, Mathura District, Uttar Pradesh 281502',
       lat: 27.4977,
@@ -731,7 +742,8 @@ export const ALL_PLACES: Place[] = [
     type: 'sacred-site',
     shortDescription:
       'The two holiest lakes in all of Braj — created by Radha and Krishna themselves, bathing in Radha Kund on Ashtami is said to grant liberation from the cycle of birth and death.',
-    images: [],
+    thumbnail: '/images/places/radha-kund.jpg',
+    images: ['/images/places/radha-kund.jpg'],
     location: {
       address: 'Radha Kund, Govardhan, Mathura District, Uttar Pradesh',
       lat: 27.5234,
@@ -780,7 +792,8 @@ export const ALL_PLACES: Place[] = [
     type: 'temple',
     shortDescription:
       'The hilltop temple dedicated to Srimati Radharani — the birthplace of Radha and one of the most important pilgrimage sites in Braj, famous for Lathmar Holi.',
-    images: [],
+    thumbnail: '/images/places/radha-rani-temple-barsana.jpg',
+    images: ['/images/places/radha-rani-temple-barsana.jpg'],
     location: {
       address: 'Barsana, Mathura District, Uttar Pradesh 281405',
       lat: 27.6502,
