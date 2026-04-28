@@ -8,9 +8,29 @@ import { motion }   from 'framer-motion'
 import { Save, Plus, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import AdminPageHeader from '@/components/admin/AdminPageHeader'
+import ImageManager    from '@/components/admin/ImageManager'
 import { cars }        from '@/config/site'
 
-const INITIAL = {
+interface PackageForm {
+  name:             string
+  slug:             string
+  duration:         number
+  nights:           number
+  cities:           string[]
+  basePrice:        number
+  shortDescription: string
+  highlights:       string[]
+  inclusions:       string[]
+  exclusions:       string[]
+  isActive:         boolean
+  isFeatured:       boolean
+  isPopular:        boolean
+  thumbnail:        string
+  images:           string[]
+  pricing:          { carType: string; carName: string; price: number }[]
+}
+
+const INITIAL: PackageForm = {
   name:             '',
   slug:             '',
   duration:         1,
@@ -32,6 +52,8 @@ const INITIAL = {
     'Entry fees at temples',
     'Personal expenses',
   ],
+  thumbnail:  '',
+  images:     [],
   isActive:   true,
   isFeatured: false,
   isPopular:  false,
@@ -40,7 +62,7 @@ const INITIAL = {
 
 export default function NewPackagePage() {
   const router  = useRouter()
-  const [form,  setForm]  = useState(INITIAL)
+  const [form,  setForm]  = useState<PackageForm>(INITIAL)
   const [saving,setSaving]= useState(false)
 
   function slugify(text: string) {
@@ -200,6 +222,20 @@ export default function NewPackagePage() {
                   </div>
                 </div>
               </div>
+            </motion.div>
+
+            {/* Images */}
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
+              className="card rounded-2xl p-5">
+              <h3 className="font-bold text-gray-900 mb-1">Photo Gallery</h3>
+              <p className="text-xs text-gray-400 mb-4">Upload package photos. First image becomes the main thumbnail.</p>
+              <ImageManager
+                images={form.images}
+                onChange={(imgs) => setForm({ ...form, images: imgs, thumbnail: imgs[0] ?? '' })}
+                folder="packages"
+                maxImages={6}
+                label="Package Photos"
+              />
             </motion.div>
 
             {/* Pricing per vehicle */}

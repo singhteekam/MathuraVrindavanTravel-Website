@@ -80,7 +80,11 @@ export default async function PackageDetailPage({ params }: Props) {
           description: h,
           places:      [],
         })),
-    pricing: base.pricing?.filter((p) => p.price > 0).length
+    // base.images is string[] in PackageDetail — but older DB docs may be missing it
+    // Array.isArray guard ensures safety even if a legacy doc has no images field
+    images:    Array.isArray(base.images) ? base.images.filter(Boolean) : [],
+    thumbnail: base.thumbnail ?? '',
+    pricing:   base.pricing?.filter((p) => p.price > 0).length
       ? base.pricing.filter((p) => p.price > 0)
       : [
           { carType: 'swift',  carName: 'Swift Dzire (4 pax)',    price: base.basePrice },

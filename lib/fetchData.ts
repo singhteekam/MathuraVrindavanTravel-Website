@@ -42,6 +42,7 @@ export interface PackageSummary {
   nights:           number
   cities:           string[]
   thumbnail:        string
+  images:           string[]
   basePrice:        number
   rating:           number
   totalReviews:     number

@@ -7,7 +7,8 @@ import {
   Star, Clock, MapPin, Users, Check, X as XIcon,
   Phone, MessageCircle, Calendar, ChevronRight, ArrowLeft,
 } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency }  from '@/lib/utils'
+import ImageGallery          from '@/components/shared/ImageGallery'
 import { siteConfig } from '@/config/site'
 
 // Self-contained interfaces — fully required fields on the detail page
@@ -39,7 +40,9 @@ export interface PackageData {
   inclusions: string[]
   exclusions: string[]
   itinerary: ItineraryDay[]
-  pricing: Pricing[]
+  pricing:   Pricing[]
+  images:    string[]   // always an array, never undefined ([] if empty)
+  thumbnail: string     // always a string ('' if empty)
 }
 
 const TABS = ['Overview', 'Itinerary', 'Pricing', 'Inclusions', 'Reviews']
@@ -237,6 +240,25 @@ export default function PackageDetailClient({ pkg, reviews = [] }: { pkg: Packag
           {/* Overview */}
           {activeTab === 'Overview' && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+
+              {/* Photo gallery */}
+              {(pkg.images.filter(Boolean).length > 0 || pkg.thumbnail) && (
+                <div className="mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4"
+                    style={{ fontFamily: 'var(--font-serif)' }}>
+                    📸 Photo Gallery
+                  </h2>
+                  <ImageGallery
+                    images={
+                      pkg.images.filter(Boolean).length > 0
+                        ? pkg.images.filter(Boolean)
+                        : pkg.thumbnail ? [pkg.thumbnail] : []
+                    }
+                    name={pkg.name}
+                    type="temple"
+                  />
+                </div>
+              )}
               <h2 className="text-2xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'var(--font-serif)' }}>
                 About This Package
               </h2>
