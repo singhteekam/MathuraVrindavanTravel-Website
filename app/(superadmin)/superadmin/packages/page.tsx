@@ -1,0 +1,221 @@
+'use client'
+
+export const dynamic = 'force-dynamic'
+
+import { useEffect, useState, useCallback } from 'react'
+import { motion }      from 'framer-motion'
+import Link            from 'next/link'
+import {
+  Plus, Search, Package, Edit, Eye,
+  ToggleLeft, ToggleRight, Star, ShieldCheck,
+} from 'lucide-react'
+import toast           from 'react-hot-toast'
+import { formatCurrency } from '@/lib/utils'
+
+interface Pkg {
+  _id:        string
+  slug:       string
+  name:       string
+  duration:   number
+  basePrice:  number
+  isActive:   boolean
+  isFeatured: boolean
+  isPopular:  boolean
+  rating:     number
+  totalReviews: number
+}
+
+export default function SuperadminPackagesPage() {
+  const [packages, setPackages] = useState<Pkg[]>([])
+  const [loading,  setLoading]  = useState(true)
+  const [search,   setSearch]   = useState('')
+
+  const fetchPackages = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res  = await fetch('/api/packages?all=true&limit=50')
+      const data = await res.json()
+      if (data.success) setPackages(data.data)
+    } catch {
+      toast.error('Failed to load packages.')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchPackages() }, [fetchPackages])
+
+  async function toggleField(pkg: Pkg, field: 'isActive' | 'isFeatured' | 'isPopular') {
+    try {
+      const res = await fetch(`/api/packages/${pkg.slug}`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ [field]: !pkg[field] }),
+      })
+      if (res.ok) {
+        toast.success('Updated!')
+        setPackages((prev) =>
+          prev.map((p) => p._id === pkg._id ? { ...p, [field]: !p[field] } : p),
+        )
+      } else {
+        toast.error('Update failed.')
+      }
+    } catch {
+      toast.error('Network error.')
+    }
+  }
+
+  const filtered = packages.filter((p) =>
+    !search || p.name.toLowerCase().includes(search.toLowerCase()),
+  )
+
+  return (
+    <div className="flex-1 p-6 lg:p-8 pt-20 lg:pt-8 overflow-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <ShieldCheck size={16} className="text-indigo-500" />
+            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">Superadmin</p>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-serif)' }}>
+            Tour Packages
+          </h1>
+          <p className="text-sm text-gray-400 mt-0.5">{packages.length} packages</p>
+        </div>
+        <Link href="/admin/packages/new" className="btn-primary text-sm py-2.5 px-5 flex-shrink-0">
+          <Plus size={16} /> New Package
+        </Link>
+      </div>
+
+      {/* Search */}
+      <div className="relative max-w-sm mb-6">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input type="text" placeholder="Search packages..."
+          value={search} onChange={(e) => setSearch(e.target.value)}
+          className="input-field pl-8 py-2.5 text-sm" />
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="w-7 h-7 border-4 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+        <div className="card rounded-2xl overflow-hidden">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ background: '#f9fafb', borderBottom: '1px solid #f3f4f6' }}>
+                  {['Package', 'Duration', 'Price', 'Rating', 'Active', 'Featured', 'Popular', 'Actions'].map((h) => (
+                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((pkg, i) => (
+                  <motion.tr key={pkg._id}
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    transition={{ delay: i * 0.03 }}
+                    className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                          style={{ background: '#fff8ed' }}>
+                          <Package size={14} style={{ color: '#ff7d0f' }} />
+                        </div>
+                        <span className="font-semibold text-gray-800 text-sm max-w-[200px] truncate">{pkg.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-gray-500 text-sm whitespace-nowrap">
+                      {pkg.duration}D
+                    </td>
+                    <td className="px-4 py-3 font-semibold text-sm whitespace-nowrap" style={{ color: '#ff7d0f' }}>
+                      {formatCurrency(pkg.basePrice)}
+                    </td>
+                    <td className="px-4 py-3">
+                      {pkg.rating > 0 ? (
+                        <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: '#f59e0b' }}>
+                          <Star size={11} fill="currentColor" />{pkg.rating} ({pkg.totalReviews})
+                        </span>
+                      ) : <span className="text-xs text-gray-300">No reviews</span>}
+                    </td>
+                    {(['isActive', 'isFeatured', 'isPopular'] as const).map((field) => (
+                      <td key={field} className="px-4 py-3">
+                        <button type="button" onClick={() => toggleField(pkg, field)}
+                          className="transition-colors"
+                          style={{ color: pkg[field] ? '#22c55e' : '#d1d5db' }}>
+                          {pkg[field] ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
+                        </button>
+                      </td>
+                    ))}
+                    <td className="px-4 py-3">
+                      <div className="flex gap-2">
+                        <Link href={`/packages/${pkg.slug}`} target="_blank"
+                          className="p-1.5 rounded-lg" style={{ background: '#f0fdf4', color: '#16a34a' }}>
+                          <Eye size={14} />
+                        </Link>
+                        <Link href={`/admin/packages/${pkg.slug}/edit`}
+                          className="p-1.5 rounded-lg" style={{ background: '#eef2ff', color: '#4338ca' }}>
+                          <Edit size={14} />
+                        </Link>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-gray-50">
+            {filtered.map((pkg, i) => (
+              <motion.div key={pkg._id}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                transition={{ delay: i * 0.04 }}
+                className="p-4">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div>
+                    <p className="font-bold text-gray-900 text-sm leading-snug">{pkg.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {pkg.duration}D · {formatCurrency(pkg.basePrice)}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <Link href={`/packages/${pkg.slug}`} target="_blank"
+                      className="p-1.5 rounded-lg" style={{ background: '#f0fdf4', color: '#16a34a' }}>
+                      <Eye size={14} />
+                    </Link>
+                    <Link href={`/admin/packages/${pkg.slug}/edit`}
+                      className="p-1.5 rounded-lg" style={{ background: '#eef2ff', color: '#4338ca' }}>
+                      <Edit size={14} />
+                    </Link>
+                  </div>
+                </div>
+                <div className="flex gap-4 text-xs">
+                  {(['isActive', 'isFeatured', 'isPopular'] as const).map((field) => (
+                    <button key={field} type="button"
+                      onClick={() => toggleField(pkg, field)}
+                      className="flex items-center gap-1 capitalize font-medium"
+                      style={{ color: pkg[field] ? '#22c55e' : '#9ca3af' }}>
+                      {pkg[field] ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                      {field.replace('is', '')}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {filtered.length === 0 && !loading && (
+            <div className="text-center py-16">
+              <Package size={40} className="text-gray-200 mx-auto mb-3" />
+              <p className="text-gray-400">No packages found.</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

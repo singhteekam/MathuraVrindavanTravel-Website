@@ -1,32 +1,69 @@
-import { withAuth } from 'next-auth/middleware'
+import { withAuth, NextRequestWithAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
 
 export default withAuth(
-  function middleware(req) {
+  function middleware(req: NextRequestWithAuth) {
     const token    = req.nextauth.token
     const pathname = req.nextUrl.pathname
 
-    // Admin routes — must be admin role
-    if (pathname.startsWith('/admin') && token?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/login?error=unauthorized', req.url))
+    // ── Check for deactivated account ──────────────────────────
+    if (token?.error === 'AccountDeactivated') {
+      const url = new URL('/login?error=account_disabled', req.url)
+      return NextResponse.redirect(url)
     }
 
-    // Driver routes — must be driver role
-    if (pathname.startsWith('/driver') && token?.role !== 'driver') {
-      return NextResponse.redirect(new URL('/login?error=unauthorized', req.url))
+    // ── Role-based route guards ─────────────────────────────────
+    if (pathname.startsWith('/superadmin')) {
+      if (token?.role !== 'superadmin') {
+        return NextResponse.redirect(new URL('/login?error=unauthorized', req.url))
+      }
     }
 
-    // Customer routes — any logged-in user
-    if (pathname.startsWith('/customer') && !token) {
-      return NextResponse.redirect(new URL('/login', req.url))
+    if (pathname.startsWith('/admin')) {
+      // Both admin and superadmin can access admin panel
+      if (token?.role !== 'admin' && token?.role !== 'superadmin') {
+        return NextResponse.redirect(new URL('/login?error=unauthorized', req.url))
+      }
+    }
+
+    if (pathname.startsWith('/driver')) {
+      if (token?.role !== 'driver') {
+        return NextResponse.redirect(new URL('/login?error=unauthorized', req.url))
+      }
+    }
+
+    if (pathname.startsWith('/customer')) {
+      // Any authenticated user can access /customer
+      if (!token) {
+        return NextResponse.redirect(new URL('/login', req.url))
+      }
     }
 
     return NextResponse.next()
   },
   {
     callbacks: {
-      // Only run middleware when the user has a session token
-      authorized: ({ token }) => !!token,
+      /**
+       * `authorized` runs BEFORE the middleware function above.
+       * Return false to redirect to signIn page immediately.
+       * We allow the request through here and do fine-grained
+       * role checks in the middleware function above.
+       */
+      authorized: ({ token, req }) => {
+        const pathname = req.nextUrl.pathname
+
+        // All protected routes require a valid token
+        if (
+          pathname.startsWith('/admin')      ||
+          pathname.startsWith('/superadmin') ||
+          pathname.startsWith('/driver')     ||
+          pathname.startsWith('/customer')
+        ) {
+          return !!token
+        }
+
+        return true
+      },
     },
   },
 )
@@ -34,6 +71,7 @@ export default withAuth(
 export const config = {
   matcher: [
     '/admin/:path*',
+    '/superadmin/:path*',
     '/driver/:path*',
     '/customer/:path*',
   ],

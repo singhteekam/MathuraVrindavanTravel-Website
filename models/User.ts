@@ -5,7 +5,7 @@ export interface IUserDoc extends Document {
   email: string
   phone: string
   password?: string
-  role: 'customer' | 'driver' | 'admin'
+  role: 'customer' | 'driver' | 'admin' | 'superadmin'
   avatar?: string
   isActive: boolean
   emailVerified?: Date
@@ -19,7 +19,7 @@ const UserSchema = new Schema<IUserDoc>(
     email:         { type: String, required: true, lowercase: true, trim: true },
     phone:         { type: String, required: true, trim: true },
     password:      { type: String, select: false },   // excluded by default
-    role:          { type: String, enum: ['customer', 'driver', 'admin'], default: 'customer' },
+    role:          { type: String, enum: ['customer', 'driver', 'admin', 'superadmin'], default: 'customer' },
     avatar:        { type: String },
     isActive:      { type: Boolean, default: true },
     emailVerified: { type: Date },
