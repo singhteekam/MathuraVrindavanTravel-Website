@@ -5,11 +5,11 @@ import { motion, useInView } from 'framer-motion'
 import CountUp from 'react-countup'
 
 const stats = [
-  { value: 2000,  suffix: '+', label: 'Happy Pilgrims',   emoji: '🙏' },
+  { value: 10,  suffix: '+', label: 'Happy Pilgrims',   emoji: '🙏' },
   { value: 50,    suffix: '+', label: 'Sacred Places',    emoji: '🛕' },
-  { value: 5,     suffix: '+', label: 'Years of Service', emoji: '⭐' },
-  { value: 15,    suffix: '+', label: 'Tour Packages',    emoji: '🚗' },
-  { value: 99,    suffix: '%', label: 'Satisfaction Rate',emoji: '❤️' },
+  { value: 2,     suffix: '+', label: 'Months of Service', emoji: '⭐' },
+  { value: 5,    suffix: '+', label: 'Tour Packages',    emoji: '🚗' },
+  { value: 95,    suffix: '%', label: 'Satisfaction Rate',emoji: '❤️' },
 ]
 
 export default function StatsBar() {

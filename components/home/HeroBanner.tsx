@@ -144,7 +144,7 @@ export default function HeroBanner() {
             >
               {[
                 { icon: <Star size={16} fill="currentColor" />, text: '4.9/5 Rating', color: '#f59e0b' },
-                { icon: <Users size={16} />, text: '2000+ Happy Pilgrims', color: '#34d399' },
+                { icon: <Users size={16} />, text: '10+ Happy Pilgrims', color: '#34d399' },
                 { icon: <MapPin size={16} />, text: '50+ Sacred Places', color: '#60a5fa' },
               ].map((item) => (
                 <div

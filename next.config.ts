@@ -15,7 +15,7 @@ const nextConfig = {
     // Supported formats for best compression
     formats: ['image/avif', 'image/webp'],
   },
-  allowedDevOrigins: ['192.168.0.107'],  // for development, allow requests from this origin
+  allowedDevOrigins: ['192.168.1.38'],  // for development, allow requests from this origin
   serverExternalPackages: ['mongoose'],
 
 }

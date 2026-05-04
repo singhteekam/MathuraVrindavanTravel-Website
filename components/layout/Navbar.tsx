@@ -210,7 +210,7 @@ export default function Navbar() {
               </div>
               <div className="hidden sm:block leading-tight">
                 <p className="font-bold text-gray-900 text-base" style={{ fontFamily: 'var(--font-serif)' }}>Mathura Vrindavan</p>
-                <p className="text-saffron-500 text-xs font-semibold tracking-widest uppercase">Travel</p>
+                <p className="text-saffron-500 text-xs font-semibold tracking-widest uppercase">Dham Yatra</p>
               </div>
             </Link>
 

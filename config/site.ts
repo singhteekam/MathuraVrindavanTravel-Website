@@ -1,18 +1,18 @@
 export const siteConfig = {
   name: 'Mathura Vrindavan Dham Yatra',
-  shortName: 'MVTravel',
+  shortName: 'MV Dham Yatra',
   tagline: 'Experience the Divine Land of Lord Krishna',
   description:
     'Best tour packages, taxi services, hotel assistance for Mathura & Vrindavan pilgrimage trips.',
-  url: 'https://mathuravrindavantravel.com',
-  phone: '+91 99999 99999',
-  whatsapp: '919999999999',
-  email: 'info@mathuravrindavantravel.com',
+  url: 'https://mathuravrindavandhamyatra.com',
+  phone: '+91 85348 90870',
+  whatsapp: '918534890870',
+  email: 'info@mathuravrindavandhamyatra.com',
   address: 'Mathura, Uttar Pradesh, India — 281001',
   social: {
-    facebook: 'https://facebook.com/mathuravrindavantravel',
-    instagram: 'https://instagram.com/mathuravrindavantravel',
-    youtube: 'https://youtube.com/@mathuravrindavantravel',
+    facebook: 'https://facebook.com/mathuravrindavandhamyatra',
+    instagram: 'https://instagram.com/mathuravrindavandhamyatra',
+    youtube: 'https://youtube.com/@mathuravrindavandhamyatra',
   },
 }
 
