@@ -3,7 +3,7 @@ import AdminSidebarWrapper from './AdminSidebarWrapper'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Admin — Mathura Vrindavan Travel',
+    default: 'Admin — Mathura Vrindavan Dham Yatra',
     template: '%s | Admin',
   },
   robots: { index: false, follow: false },

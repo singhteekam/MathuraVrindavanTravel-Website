@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pkg = await getPackageBySlug(slug)
   if (!pkg) return { title: 'Package Not Found' }
   return {
-    title:       `${pkg.name} \u2014 Mathura Vrindavan Travel`,
+    title:       `${pkg.name} \u2014 Mathura Vrindavan Dham Yatra`,
     description: pkg.shortDescription,
     openGraph:   { title: pkg.name, description: pkg.shortDescription },
   }

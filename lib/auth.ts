@@ -6,9 +6,11 @@ import { connectDB } from '@/lib/db'
 import UserModel from '@/models/User'
 
 // Token lifetime constants
-const ACCESS_TOKEN_MAX_AGE  = 60 * 60 * 8         // 8 hours  (re-validate on every request)
-const SESSION_MAX_AGE       = 60 * 60 * 24 * 7    // 7 days   (JWT cookie lifetime)
-const TOKEN_REFRESH_BUFFER  = 60 * 60             // Refresh token if < 1 hr left
+const ACCESS_TOKEN_MAX_AGE  = 60 * 60 * 8          // 8 hours  (re-validate on every request)
+const SESSION_MAX_AGE       = 60 * 60 * 24 * 7     // 7 days   (JWT cookie lifetime)
+const TOKEN_REFRESH_BUFFER  = 60 * 60              // Refresh token if < 1 hr left
+const SERVER_INACTIVITY_TTL = 60 * 60 * 24         // Server-side: expire after 24 hrs of no API call
+                                                   // Client-side: InactivityWatcher fires at 30 min
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -82,9 +84,23 @@ export const authOptions: NextAuthOptions = {
         token.id          = u.id
         token.role        = u.role ?? 'customer'
         token.issuedAt    = now
+        token.lastActive  = now                         // track last activity
         token.accessExp   = now + ACCESS_TOKEN_MAX_AGE
         return token
       }
+
+      // ── Server-side inactivity check ─────────────────────────────────────
+      // If the JWT hasn't been touched for SERVER_INACTIVITY_TTL, force logout.
+      // The client-side InactivityWatcher catches short inactivity (30 min).
+      // This catches cases like: browser closed without logging out for 24+ hrs.
+      const lastActive = token.lastActive as number | undefined
+      if (lastActive && now - lastActive > SERVER_INACTIVITY_TTL) {
+        console.info('[Auth] Server-side inactivity logout — user:', token.id)
+        return { ...token, error: 'SessionExpiredInactivity' }
+      }
+
+      // Update lastActive on every token check (proves the session is being used)
+      token.lastActive = now
 
       // Subsequent requests — check if access token has expired
       const accessExp = token.accessExp as number | undefined
@@ -127,7 +143,8 @@ export const authOptions: NextAuthOptions = {
      * Only include what the client actually needs — no sensitive data.
      */
     async session({ session, token }) {
-      // If token has an error (e.g. user deactivated), attach it
+      // If token has an error (deactivated, inactivity) attach it to session
+      // The client reads session.error to redirect to login
       if (token.error) {
         (session as typeof session & { error?: string }).error = token.error as string
       }

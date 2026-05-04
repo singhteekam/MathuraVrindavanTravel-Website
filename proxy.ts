@@ -6,10 +6,13 @@ export default withAuth(
     const token    = req.nextauth.token
     const pathname = req.nextUrl.pathname
 
-    // ── Check for deactivated account ──────────────────────────
+    // ── Check for token-level errors ────────────────────────────
+    // Catches: account deactivated by admin, server-side inactivity expiry
     if (token?.error === 'AccountDeactivated') {
-      const url = new URL('/login?error=account_disabled', req.url)
-      return NextResponse.redirect(url)
+      return NextResponse.redirect(new URL('/login?error=account_disabled', req.url))
+    }
+    if (token?.error === 'SessionExpiredInactivity') {
+      return NextResponse.redirect(new URL('/login?reason=inactivity', req.url))
     }
 
     // ── Role-based route guards ─────────────────────────────────
@@ -23,6 +26,16 @@ export default withAuth(
       // Both admin and superadmin can access admin panel
       if (token?.role !== 'admin' && token?.role !== 'superadmin') {
         return NextResponse.redirect(new URL('/login?error=unauthorized', req.url))
+      }
+
+      // Places and Settings are superadmin-only — block admin access at proxy level
+      // Only /admin/places is fully superadmin-only.
+      // /admin/settings is allowed for admin (limited view — booking config only).
+      const saOnlyPaths = ['/admin/places']
+      if (saOnlyPaths.some((p) => pathname.startsWith(p))) {
+        if (token?.role !== 'superadmin') {
+          return NextResponse.redirect(new URL('/admin', req.url))
+        }
       }
     }
 

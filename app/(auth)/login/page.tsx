@@ -17,6 +17,7 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const callbackUrl  = searchParams.get('callbackUrl') ?? ''
   const errorParam   = searchParams.get('error')
+  const reasonParam  = searchParams.get('reason')
 
   const [tab,       setTab]       = useState<LoginTab>('portal')
   const [email,     setEmail]     = useState('')
@@ -88,7 +89,7 @@ function LoginForm() {
           <div>
             <p className="font-bold text-gray-900 text-xl"
               style={{ fontFamily: 'var(--font-serif)' }}>
-              Mathura Vrindavan Travel
+              Mathura Vrindavan Dham Yatra
             </p>
             <p className="text-saffron-500 text-xs font-semibold tracking-widest uppercase mt-0.5">
               Sign In to Your Account
@@ -173,6 +174,13 @@ function LoginForm() {
         )}
 
         {/* Error messages */}
+        {reasonParam === 'inactivity' && (
+          <div className="flex items-center gap-2 p-3 rounded-xl mb-4 text-sm"
+            style={{ background: '#fff8ed', color: '#c74a06', border: '1px solid #ffdba8' }}>
+            <span className="text-lg flex-shrink-0">⏱️</span>
+            You were signed out due to inactivity. Please sign in again.
+          </div>
+        )}
         {errorParam === 'unauthorized' && (
           <div className="flex items-center gap-2 p-3 rounded-xl mb-4 text-sm"
             style={{ background: '#fff1f2', color: '#dc2626', border: '1px solid #fecdd3' }}>

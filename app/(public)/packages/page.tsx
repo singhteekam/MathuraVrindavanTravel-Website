@@ -3,7 +3,7 @@ import PackagesClient   from './PackagesClient'
 import { getAllPackages } from '@/lib/fetchData'
 
 export const metadata: Metadata = {
-  title:       'Tour Packages \u2014 Mathura Vrindavan Travel',
+  title:       'Tour Packages \u2014 Mathura Vrindavan Dham Yatra',
   description: 'Browse Mathura Vrindavan tour packages \u2014 1 day to 8 days. AC cars, expert drivers, hotel help. Starting from \u20b92,000.',
   openGraph: {
     title:       'Mathura Vrindavan Tour Packages',

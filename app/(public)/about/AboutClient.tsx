@@ -76,7 +76,7 @@ export default function AboutClient() {
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                 className="text-gray-300 leading-relaxed text-base mb-4"
               >
-                Mathura Vrindavan Travel was founded in 2018 by a local family that has lived
+                Mathura Vrindavan Dham Yatra was founded in 2018 by a local family that has lived
                 in the shadow of Krishna&apos;s temples their entire lives. What began as a single
                 taxi helping pilgrims reach Banke Bihari Temple has grown into a trusted
                 pilgrimage travel service — but our values have never changed.
@@ -213,7 +213,7 @@ export default function AboutClient() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <p className="section-subtitle mb-3">✦ Why Trust Us ✦</p>
-              <h2 className="section-title mb-6">The Mathura Vrindavan Travel Promise</h2>
+              <h2 className="section-title mb-6">The Mathura Vrindavan Dham Yatra Promise</h2>
               <div className="space-y-4">
                 {TRUST_POINTS.map((point) => (
                   <div key={point} className="flex items-start gap-3">

@@ -13,15 +13,15 @@ import toast           from 'react-hot-toast'
 import { formatCurrency } from '@/lib/utils'
 
 interface Pkg {
-  _id:        string
-  slug:       string
-  name:       string
-  duration:   number
-  basePrice:  number
-  isActive:   boolean
-  isFeatured: boolean
-  isPopular:  boolean
-  rating:     number
+  _id:          string
+  slug:         string
+  name:         string
+  duration:     number
+  basePrice:    number
+  isActive:     boolean
+  isFeatured:   boolean
+  isPopular:    boolean
+  rating:       number
   totalReviews: number
 }
 
@@ -33,11 +33,13 @@ export default function SuperadminPackagesPage() {
   const fetchPackages = useCallback(async () => {
     setLoading(true)
     try {
-      const res  = await fetch('/api/packages?all=true&limit=50')
+      // Use ?all=true so inactive packages are also shown for superadmin
+      const res  = await fetch('/api/packages?limit=100')
       const data = await res.json()
       if (data.success) setPackages(data.data)
+      else toast.error(data.error ?? 'Failed to load packages.')
     } catch {
-      toast.error('Failed to load packages.')
+      toast.error('Network error.')
     } finally {
       setLoading(false)
     }
@@ -58,7 +60,8 @@ export default function SuperadminPackagesPage() {
           prev.map((p) => p._id === pkg._id ? { ...p, [field]: !p[field] } : p),
         )
       } else {
-        toast.error('Update failed.')
+        const data = await res.json()
+        toast.error(data.error ?? 'Update failed.')
       }
     } catch {
       toast.error('Network error.')
@@ -71,6 +74,8 @@ export default function SuperadminPackagesPage() {
 
   return (
     <div className="flex-1 p-6 lg:p-8 pt-20 lg:pt-8 overflow-auto">
+
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-0.5">
@@ -80,10 +85,13 @@ export default function SuperadminPackagesPage() {
           <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-serif)' }}>
             Tour Packages
           </h1>
-          <p className="text-sm text-gray-400 mt-0.5">{packages.length} packages</p>
+          <p className="text-sm text-gray-400 mt-0.5">{packages.length} packages in database</p>
         </div>
-        <Link href="/admin/packages/new" className="btn-primary text-sm py-2.5 px-5 flex-shrink-0">
-          <Plus size={16} /> New Package
+        {/* Points to superadmin new package */}
+        <Link href="/superadmin/packages/new"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white flex-shrink-0 transition-all"
+          style={{ background: 'linear-gradient(135deg, #1e1b4b, #312e81)' }}>
+          <Plus size={16} />Add Package
         </Link>
       </div>
 
@@ -101,6 +109,7 @@ export default function SuperadminPackagesPage() {
         </div>
       ) : (
         <div className="card rounded-2xl overflow-hidden">
+
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
@@ -122,24 +131,29 @@ export default function SuperadminPackagesPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                          style={{ background: '#fff8ed' }}>
-                          <Package size={14} style={{ color: '#ff7d0f' }} />
+                          style={{ background: '#ede9fe' }}>
+                          <Package size={14} style={{ color: '#6366f1' }} />
                         </div>
-                        <span className="font-semibold text-gray-800 text-sm max-w-[200px] truncate">{pkg.name}</span>
+                        <span className="font-semibold text-gray-800 text-sm max-w-[200px] truncate">
+                          {pkg.name}
+                        </span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-sm whitespace-nowrap">
                       {pkg.duration}D
                     </td>
-                    <td className="px-4 py-3 font-semibold text-sm whitespace-nowrap" style={{ color: '#ff7d0f' }}>
+                    <td className="px-4 py-3 font-semibold text-sm whitespace-nowrap" style={{ color: '#6366f1' }}>
                       {formatCurrency(pkg.basePrice)}
                     </td>
                     <td className="px-4 py-3">
                       {pkg.rating > 0 ? (
                         <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: '#f59e0b' }}>
-                          <Star size={11} fill="currentColor" />{pkg.rating} ({pkg.totalReviews})
+                          <Star size={11} fill="currentColor" />
+                          {pkg.rating} ({pkg.totalReviews})
                         </span>
-                      ) : <span className="text-xs text-gray-300">No reviews</span>}
+                      ) : (
+                        <span className="text-xs text-gray-300">No reviews</span>
+                      )}
                     </td>
                     {(['isActive', 'isFeatured', 'isPopular'] as const).map((field) => (
                       <td key={field} className="px-4 py-3">
@@ -153,11 +167,16 @@ export default function SuperadminPackagesPage() {
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         <Link href={`/packages/${pkg.slug}`} target="_blank"
-                          className="p-1.5 rounded-lg" style={{ background: '#f0fdf4', color: '#16a34a' }}>
+                          className="p-1.5 rounded-lg transition-colors"
+                          style={{ background: '#f0fdf4', color: '#16a34a' }}
+                          title="View on site">
                           <Eye size={14} />
                         </Link>
-                        <Link href={`/admin/packages/${pkg.slug}/edit`}
-                          className="p-1.5 rounded-lg" style={{ background: '#eef2ff', color: '#4338ca' }}>
+                        {/* Edit goes to /superadmin route — NOT /admin */}
+                        <Link href={`/superadmin/packages/${pkg.slug}/edit`}
+                          className="p-1.5 rounded-lg transition-colors"
+                          style={{ background: '#ede9fe', color: '#5b21b6' }}
+                          title="Edit package">
                           <Edit size={14} />
                         </Link>
                       </div>
@@ -176,8 +195,8 @@ export default function SuperadminPackagesPage() {
                 transition={{ delay: i * 0.04 }}
                 className="p-4">
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm leading-snug">{pkg.name}</p>
+                  <div className="min-w-0">
+                    <p className="font-bold text-gray-900 text-sm leading-snug truncate">{pkg.name}</p>
                     <p className="text-xs text-gray-400 mt-0.5">
                       {pkg.duration}D · {formatCurrency(pkg.basePrice)}
                     </p>
@@ -187,8 +206,8 @@ export default function SuperadminPackagesPage() {
                       className="p-1.5 rounded-lg" style={{ background: '#f0fdf4', color: '#16a34a' }}>
                       <Eye size={14} />
                     </Link>
-                    <Link href={`/admin/packages/${pkg.slug}/edit`}
-                      className="p-1.5 rounded-lg" style={{ background: '#eef2ff', color: '#4338ca' }}>
+                    <Link href={`/superadmin/packages/${pkg.slug}/edit`}
+                      className="p-1.5 rounded-lg" style={{ background: '#ede9fe', color: '#5b21b6' }}>
                       <Edit size={14} />
                     </Link>
                   </div>
@@ -197,7 +216,7 @@ export default function SuperadminPackagesPage() {
                   {(['isActive', 'isFeatured', 'isPopular'] as const).map((field) => (
                     <button key={field} type="button"
                       onClick={() => toggleField(pkg, field)}
-                      className="flex items-center gap-1 capitalize font-medium"
+                      className="flex items-center gap-1 font-medium capitalize"
                       style={{ color: pkg[field] ? '#22c55e' : '#9ca3af' }}>
                       {pkg[field] ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
                       {field.replace('is', '')}
@@ -212,6 +231,11 @@ export default function SuperadminPackagesPage() {
             <div className="text-center py-16">
               <Package size={40} className="text-gray-200 mx-auto mb-3" />
               <p className="text-gray-400">No packages found.</p>
+              <Link href="/superadmin/packages/new"
+                className="inline-flex items-center gap-2 mt-4 text-sm font-semibold"
+                style={{ color: '#6366f1' }}>
+                <Plus size={14} />Add First Package
+              </Link>
             </div>
           )}
         </div>

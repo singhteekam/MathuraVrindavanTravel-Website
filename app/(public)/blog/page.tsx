@@ -3,7 +3,7 @@ import Link              from 'next/link'
 import { Clock, Tag }    from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Travel Blog — Mathura Vrindavan Travel',
+  title: 'Travel Blog — Mathura Vrindavan Dham Yatra',
   description:
     'Travel guides, temple timings, festival dates, and tips for visiting Mathura and Vrindavan. Everything you need to plan your pilgrimage.',
 }

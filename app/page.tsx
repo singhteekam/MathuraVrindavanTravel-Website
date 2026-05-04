@@ -17,12 +17,12 @@ import Footer from '@/components/layout/Footer'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 
 export const metadata: Metadata = {
-  title: 'Mathura Vrindavan Travel | Best Tour Packages & Taxi Service',
+  title: 'Mathura Vrindavan Dham Yatra | Best Tour Packages & Taxi Service',
   description:
     'Experience the divine land of Lord Krishna. Best Mathura Vrindavan tour packages starting \u20b92000. AC cars, expert drivers, hotel assistance. Book now!',
   keywords: ['Mathura Vrindavan tour packages', 'Vrindavan taxi', 'Mathura tour', 'Krishna temple tour'],
   openGraph: {
-    title:       'Mathura Vrindavan Travel | Best Tour Packages',
+    title:       'Mathura Vrindavan Dham Yatra | Best Tour Packages',
     description: 'Tour packages starting \u20b92000. AC cars, expert drivers. Book now!',
     url:         'https://mathuravrindavantravel.com',
     images:      [{ url: '/images/og-image.jpg', width: 1200, height: 630 }],

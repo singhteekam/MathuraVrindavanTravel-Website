@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const place    = await getPlaceBySlug(slug)
   if (!place) return { title: 'Place Not Found' }
   return {
-    title:       `${place.name} \u2014 Mathura Vrindavan Travel`,
+    title:       `${place.name} \u2014 Mathura Vrindavan Dham Yatra`,
     description: place.shortDescription,
     openGraph:   { title: place.name, description: place.shortDescription },
   }

@@ -3,10 +3,10 @@ import PlacesClient       from './PlacesClient'
 import { getAllPlaces }    from '@/lib/fetchData'
 
 export const metadata: Metadata = {
-  title:       'Sacred Places \u2014 Mathura Vrindavan Travel',
+  title:       'Sacred Places \u2014 Mathura Vrindavan Dham Yatra',
   description: 'Explore 50+ sacred temples, ghats, and spiritual sites in Mathura, Vrindavan, Govardhan and Barsana.',
   openGraph: {
-    title:       'Sacred Places of Braj \u2014 Mathura Vrindavan Travel',
+    title:       'Sacred Places of Braj \u2014 Mathura Vrindavan Dham Yatra',
     description: 'Complete guide to temples, ghats & sacred sites of the holy land.',
   },
 }

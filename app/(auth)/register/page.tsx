@@ -75,7 +75,7 @@ export default function RegisterPage() {
           </div>
           <div>
             <p className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'var(--font-serif)' }}>
-              Mathura Vrindavan Travel
+              Mathura Vrindavan Dham Yatra
             </p>
             <p className="text-saffron-500 text-xs font-semibold tracking-widest uppercase">Create Account</p>
           </div>

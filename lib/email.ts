@@ -62,7 +62,7 @@ export async function sendBookingConfirmation(booking: {
       </div>
     </div>
   `
-  return sendEmail({ to: booking.customerEmail, subject: `Booking Confirmed — ${booking.bookingId} | Mathura Vrindavan Travel`, html })
+  return sendEmail({ to: booking.customerEmail, subject: `Booking Confirmed — ${booking.bookingId} | Mathura Vrindavan Dham Yatra`, html })
 }
 
 // New enquiry notification to admin
@@ -87,7 +87,7 @@ export async function sendEnquiryNotification(contact: {
   `
   return sendEmail({
     to:      process.env.SMTP_USER ?? siteConfig.email,
-    subject: `New Enquiry from ${contact.name} — Mathura Vrindavan Travel`,
+    subject: `New Enquiry from ${contact.name} — Mathura Vrindavan Dham Yatra`,
     html,
   })
 }

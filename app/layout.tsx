@@ -1,30 +1,31 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
-import AuthProvider from '@/components/AuthProvider'
+import AuthProvider        from '@/components/AuthProvider'
+import InactivityWatcher   from '@/components/shared/InactivityWatcher'
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://mathuravrindavantravel.com'),
   title: {
-    default: 'Mathura Vrindavan Travel | Best Tour Packages & Taxi Service',
-    template: '%s | Mathura Vrindavan Travel',
+    default: 'Mathura Vrindavan Dham Yatra | Best Tour Packages & Taxi Service',
+    template: '%s | Mathura Vrindavan Dham Yatra',
   },
   description:
-    'Experience the divine land of Lord Krishna with Mathura Vrindavan Travel. Best tour packages, taxi service, hotel assistance from ₹2000.',
+    'Experience the divine land of Lord Krishna with Mathura Vrindavan Dham Yatra. Best tour packages, taxi service, hotel assistance from ₹2000.',
   keywords: [
-    'Mathura Vrindavan tour packages',
+    'Mathura Vrindavan Dham Yatra tour packages',
     'Vrindavan taxi service',
     'Mathura tour',
     'Krishna temple tour',
   ],
-  authors: [{ name: 'Mathura Vrindavan Travel' }],
+  authors: [{ name: 'Mathura Vrindavan Dham Yatra' }],
   openGraph: {
     type: 'website',
     locale: 'en_IN',
     url: 'https://mathuravrindavantravel.com',
-    siteName: 'Mathura Vrindavan Travel',
+    siteName: 'Mathura Vrindavan Dham Yatra',
     images: [{ url: '/images/og-image.jpg', width: 1200, height: 630 }],
   },
   robots: { index: true, follow: true },
@@ -40,6 +41,8 @@ export default function RootLayout({
       <body className="antialiased">
         <AuthProvider>
           {children}
+          {/* Auto-logout after 30 min inactivity on protected routes */}
+          <InactivityWatcher />
           <Analytics />
           <SpeedInsights />
           <Toaster

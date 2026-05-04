@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: 'Mathura Vrindavan Travel',
+  name: 'Mathura Vrindavan Dham Yatra',
   shortName: 'MVTravel',
   tagline: 'Experience the Divine Land of Lord Krishna',
   description:

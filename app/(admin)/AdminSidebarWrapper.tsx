@@ -7,7 +7,7 @@ import { useSession }   from 'next-auth/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, CalendarCheck, Car, Package,
-  Users, Star, Mail, BarChart2,
+  Users, Star, Mail, BarChart2, Settings,
   ChevronLeft, ChevronRight, LogOut, Menu, X, ShieldCheck,
 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { href: '/admin/reviews',   icon: <Star            size={18} />, label: 'Reviews'   },
   { href: '/admin/enquiries', icon: <Mail            size={18} />, label: 'Enquiries' },
   { href: '/admin/analytics', icon: <BarChart2       size={18} />, label: 'Analytics' },
+  { href: '/admin/settings',  icon: <Settings        size={18} />, label: 'Settings'  },
 ]
 
 export default function AdminSidebarWrapper() {

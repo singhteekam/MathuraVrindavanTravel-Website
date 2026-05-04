@@ -2,10 +2,13 @@ import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { connectDB } from '@/lib/db'
-import Booking from '@/models/Booking'
-import User from '@/models/User'
-import Driver from '@/models/Driver'
-import Contact from '@/models/Contact'
+import Booking  from '@/models/Booking'
+import User     from '@/models/User'
+import Driver   from '@/models/Driver'
+import Contact  from '@/models/Contact'
+import Package  from '@/models/Package'
+import Place    from '@/models/Place'
+import Review   from '@/models/Review'
 import { successResponse, errorResponse } from '@/lib/apiResponse'
 
 // GET /api/admin/stats — admin only
@@ -13,7 +16,7 @@ export async function GET(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'admin' && user?.role !== 'superadmin') return errorResponse('Forbidden.', 403)
 
     await connectDB()
 
@@ -22,6 +25,10 @@ export async function GET(_req: NextRequest) {
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
 
     const [
+      totalPackages,
+      totalPlaces,
+      totalReviews,
+      pendingReviews,
       totalBookings,
       thisMonthBookings,
       lastMonthBookings,
@@ -37,6 +44,10 @@ export async function GET(_req: NextRequest) {
       recentBookings,
       bookingsByStatus,
     ] = await Promise.all([
+      Package.countDocuments({ isActive: true }),
+      Place.countDocuments(),
+      Review.countDocuments({ isApproved: true }),
+      Review.countDocuments({ isApproved: false }),
       Booking.countDocuments(),
       Booking.countDocuments({ createdAt: { $gte: thisMonth } }),
       Booking.countDocuments({ createdAt: { $gte: lastMonth, $lt: thisMonth } }),
@@ -85,6 +96,11 @@ export async function GET(_req: NextRequest) {
       : 100
 
     return successResponse({
+      totalPackages,
+      totalPlaces,
+      totalReviews,
+      pendingReviews,
+      totalUsers: totalCustomers,
       bookings: {
         total:      totalBookings,
         thisMonth:  thisMonthBookings,
