@@ -7,7 +7,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://mathuravrindavantravel.com'),
+  metadataBase: new URL('https://mathuravrindavandhamyatra.com'),
   title: {
     default: 'Mathura Vrindavan Dham Yatra | Best Tour Packages & Taxi Service',
     template: '%s | Mathura Vrindavan Dham Yatra',
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://mathuravrindavantravel.com',
+    url: 'https://mathuravrindavandhamyatra.com',
     siteName: 'Mathura Vrindavan Dham Yatra',
     images: [{ url: '/images/og-image.jpg', width: 1200, height: 630 }],
   },

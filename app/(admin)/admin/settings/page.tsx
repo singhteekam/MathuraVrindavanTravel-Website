@@ -62,10 +62,10 @@ export default function AdminSettingsPage() {
 
   // Read-only site info (fetched from DB, not editable by admin)
   const [siteInfo, setSiteInfo] = useState({
-    name:     'Mathura Vrindavan Travel',
-    phone:    '+91 9999999999',
-    email:    'info@mathuravrindavantravel.com',
-    whatsapp: '919999999999',
+    name:     'Mathura Vrindavan Dham Yatra',
+    phone:    '+91 8534890870',
+    email:    'info@mathuravrindavandhamyatra.com',
+    whatsapp: '918534890870',
     address:  'Mathura, Uttar Pradesh — 281001',
     tagline:  'Divine Journey. Trusted Hands.',
   })

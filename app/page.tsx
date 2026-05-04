@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title:       'Mathura Vrindavan Dham Yatra | Best Tour Packages',
     description: 'Tour packages starting \u20b92000. AC cars, expert drivers. Book now!',
-    url:         'https://mathuravrindavantravel.com',
+    url:         'https://mathuravrindavandhamyatra.com',
     images:      [{ url: '/images/og-image.jpg', width: 1200, height: 630 }],
   },
 }

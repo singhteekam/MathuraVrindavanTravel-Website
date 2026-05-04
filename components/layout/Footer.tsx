@@ -95,7 +95,7 @@ export default function Footer() {
                 <p className="font-bold text-white text-sm" style={{ fontFamily: 'var(--font-serif)' }}>
                   Mathura Vrindavan
                 </p>
-                <p className="text-saffron-400 text-xs font-semibold tracking-widest uppercase">Travel</p>
+                <p className="text-saffron-400 text-xs font-semibold tracking-widest uppercase">Dham Yatra</p>
               </div>
             </div>
 
@@ -178,6 +178,9 @@ export default function Footer() {
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy</Link>
             <Link href="/terms"   className="hover:text-gray-300 transition-colors">Terms</Link>
+            <Link href="/developer" className="hover:text-indigo-400 transition-colors text-gray-500">
+              Developer
+            </Link>
             <Link href="/sitemap.xml" className="hover:text-gray-300 transition-colors">Sitemap</Link>
           </div>
         </div>

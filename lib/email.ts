@@ -22,7 +22,7 @@ export async function sendEmail({
   html: string
 }) {
   return transporter.sendMail({
-    from:    process.env.EMAIL_FROM ?? `${siteConfig.name} <info@mathuravrindavantravel.com>`,
+    from:    process.env.EMAIL_FROM ?? `${siteConfig.name} <info@mathuravrindavandhamyatra.com>`,
     to,
     subject,
     html,
