@@ -40,7 +40,11 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <AuthProvider>
-          {children}
+          {/* {children} */}
+          <div className="flex h-screen items-center justify-center">
+            <h4 className="text-2xl font-bold md:text-2xl">Content unavailable</h4>
+          </div>
+
           {/* Auto-logout after 30 min inactivity on protected routes */}
           <InactivityWatcher />
           <Analytics />
