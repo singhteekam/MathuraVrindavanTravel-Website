@@ -1,91 +1,131 @@
 import { withAuth, NextRequestWithAuth } from 'next-auth/middleware'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest }     from 'next/server'
+import { getToken }                      from 'next-auth/jwt'
 
-export default withAuth(
-  function middleware(req: NextRequestWithAuth) {
-    const token    = req.nextauth.token
-    const pathname = req.nextUrl.pathname
+// ─── Routes that bypass maintenance mode ─────────────────────────────────────
+// Admin and superadmin can still access the site during maintenance.
+// /api routes must stay live so admin can log in and toggle maintenance off.
+const MAINTENANCE_BYPASS_PREFIXES = [
+  '/maintenance',
+  '/admin',
+  '/superadmin',
+  '/login',
+  '/api',
+  '/_next',
+  '/favicon',
+  '/images',
+]
 
-    // ── Check for token-level errors ────────────────────────────
-    // Catches: account deactivated by admin, server-side inactivity expiry
-    if (token?.error === 'AccountDeactivated') {
-      return NextResponse.redirect(new URL('/login?error=account_disabled', req.url))
-    }
-    if (token?.error === 'SessionExpiredInactivity') {
-      return NextResponse.redirect(new URL('/login?reason=inactivity', req.url))
-    }
+// ─── Main middleware ──────────────────────────────────────────────────────────
+// We export a custom function instead of withAuth directly so we can run the
+// maintenance check BEFORE next-auth's auth logic.
+export default async function middleware(req: NextRequest) {
+  const pathname = req.nextUrl.pathname
 
-    // ── Role-based route guards ─────────────────────────────────
-    if (pathname.startsWith('/superadmin')) {
-      if (token?.role !== 'superadmin') {
-        return NextResponse.redirect(new URL('/login?error=unauthorized', req.url))
+  // ── 1. Maintenance mode check ─────────────────────────────────────────────
+  const isMaintenanceMode = process.env.MAINTENANCE_MODE === 'true'
+
+  if (isMaintenanceMode) {
+    const isBypassed = MAINTENANCE_BYPASS_PREFIXES.some((p) => pathname.startsWith(p))
+
+    if (!isBypassed) {
+      // Admins and superadmins can bypass via their JWT role
+      const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+      const role  = token?.role as string | undefined
+
+      if (role !== 'admin' && role !== 'superadmin') {
+        // Redirect public users to maintenance page
+        return NextResponse.redirect(new URL('/maintenance', req.url))
       }
     }
+  }
 
-    if (pathname.startsWith('/admin')) {
-      // Both admin and superadmin can access admin panel
-      if (token?.role !== 'admin' && token?.role !== 'superadmin') {
-        return NextResponse.redirect(new URL('/login?error=unauthorized', req.url))
+  // ── 2. Auth / role guards (only for protected routes) ────────────────────
+  const isProtected =
+    pathname.startsWith('/admin')      ||
+    pathname.startsWith('/superadmin') ||
+    pathname.startsWith('/driver')     ||
+    pathname.startsWith('/customer')
+
+  if (!isProtected) return NextResponse.next()
+
+  // Delegate to withAuth for protected routes
+  return withAuth(
+    function authMiddleware(req: NextRequestWithAuth) {
+      const token     = req.nextauth.token
+      const pathname  = req.nextUrl.pathname
+
+      // ── Token-level error checks ──────────────────────────────────────────
+      if (token?.error === 'AccountDeactivated') {
+        return NextResponse.redirect(new URL('/login?error=account_disabled', req.url))
+      }
+      if (token?.error === 'SessionExpiredInactivity') {
+        return NextResponse.redirect(new URL('/login?reason=inactivity', req.url))
       }
 
-      // Places and Settings are superadmin-only — block admin access at proxy level
-      // Only /admin/places is fully superadmin-only.
-      // /admin/settings is allowed for admin (limited view — booking config only).
-      const saOnlyPaths = ['/admin/places']
-      if (saOnlyPaths.some((p) => pathname.startsWith(p))) {
+      // ── Superadmin routes ─────────────────────────────────────────────────
+      if (pathname.startsWith('/superadmin')) {
         if (token?.role !== 'superadmin') {
+          return NextResponse.redirect(new URL('/login?error=unauthorized', req.url))
+        }
+      }
+
+      // ── Admin routes ──────────────────────────────────────────────────────
+      if (pathname.startsWith('/admin')) {
+        if (token?.role !== 'admin' && token?.role !== 'superadmin') {
+          return NextResponse.redirect(new URL('/login?error=unauthorized', req.url))
+        }
+        // /admin/places is superadmin-only
+        if (pathname.startsWith('/admin/places') && token?.role !== 'superadmin') {
           return NextResponse.redirect(new URL('/admin', req.url))
         }
       }
-    }
 
-    if (pathname.startsWith('/driver')) {
-      if (token?.role !== 'driver') {
-        return NextResponse.redirect(new URL('/login?error=unauthorized', req.url))
-      }
-    }
-
-    if (pathname.startsWith('/customer')) {
-      // Any authenticated user can access /customer
-      if (!token) {
-        return NextResponse.redirect(new URL('/login', req.url))
-      }
-    }
-
-    return NextResponse.next()
-  },
-  {
-    callbacks: {
-      /**
-       * `authorized` runs BEFORE the middleware function above.
-       * Return false to redirect to signIn page immediately.
-       * We allow the request through here and do fine-grained
-       * role checks in the middleware function above.
-       */
-      authorized: ({ token, req }) => {
-        const pathname = req.nextUrl.pathname
-
-        // All protected routes require a valid token
-        if (
-          pathname.startsWith('/admin')      ||
-          pathname.startsWith('/superadmin') ||
-          pathname.startsWith('/driver')     ||
-          pathname.startsWith('/customer')
-        ) {
-          return !!token
+      // ── Driver routes ─────────────────────────────────────────────────────
+      if (pathname.startsWith('/driver')) {
+        if (token?.role !== 'driver') {
+          return NextResponse.redirect(new URL('/login?error=unauthorized', req.url))
         }
+      }
 
-        return true
+      // ── Customer routes ───────────────────────────────────────────────────
+      if (pathname.startsWith('/customer')) {
+        if (!token) {
+          return NextResponse.redirect(new URL('/login', req.url))
+        }
+      }
+
+      return NextResponse.next()
+    },
+    {
+      callbacks: {
+        authorized: ({ token, req }) => {
+          const p = req.nextUrl.pathname
+          if (
+            p.startsWith('/admin')      ||
+            p.startsWith('/superadmin') ||
+            p.startsWith('/driver')     ||
+            p.startsWith('/customer')
+          ) {
+            return !!token
+          }
+          return true
+        },
       },
     },
-  },
-)
+  )(req as NextRequestWithAuth, {} as never)
+}
 
+// ─── Matcher — includes ALL routes so maintenance mode can intercept public pages
 export const config = {
   matcher: [
-    '/admin/:path*',
-    '/superadmin/:path*',
-    '/driver/:path*',
-    '/customer/:path*',
+    /*
+     * Match all paths EXCEPT:
+     *   - _next/static (static files)
+     *   - _next/image (image optimisation)
+     *   - favicon.ico
+     *   - public image files
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.svg$|.*\\.ico$).*)',
   ],
 }
