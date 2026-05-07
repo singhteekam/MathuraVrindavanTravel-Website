@@ -1,4 +1,5 @@
-import Link from 'next/link'
+import Link         from 'next/link'
+import VisitorBadge from '@/components/shared/VisitorBadge'
 import { Phone, Mail, MapPin, Facebook, Instagram, Youtube } from 'lucide-react'
 import { siteConfig } from '@/config/site'
 
@@ -95,7 +96,7 @@ export default function Footer() {
                 <p className="font-bold text-white text-sm" style={{ fontFamily: 'var(--font-serif)' }}>
                   Mathura Vrindavan
                 </p>
-                <p className="text-saffron-400 text-xs font-semibold tracking-widest uppercase">Dham Yatra</p>
+                <p className="text-saffron-400 text-xs font-semibold tracking-widest uppercase">Travel</p>
               </div>
             </div>
 
@@ -173,11 +174,15 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-gray-800 py-5">
         <div className="container-custom flex flex-col md:flex-row justify-between items-center gap-3 text-xs text-gray-500">
-          <p>© {new Date().getFullYear()} {siteConfig.name}. All rights reserved.</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p>© {new Date().getFullYear()} {siteConfig.name}. All rights reserved.</p>
+            <VisitorBadge />
+          </div>
           <p>Jai Shri Krishna 🙏 — Built with love for devotees</p>
           <div className="flex gap-4">
-            <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy</Link>
-            <Link href="/terms"   className="hover:text-gray-300 transition-colors">Terms</Link>
+            <Link href="/privacy"   className="hover:text-gray-300 transition-colors">Privacy</Link>
+            <Link href="/terms"     className="hover:text-gray-300 transition-colors">Terms</Link>
+            <span className="text-gray-600">·</span>
             <Link href="/developer" className="hover:text-indigo-400 transition-colors text-gray-500">
               Developer
             </Link>
