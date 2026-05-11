@@ -49,12 +49,12 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/places — admin only
+// POST /api/places — superadmin only
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'superadmin') return errorResponse('Forbidden. Superadmin access required.', 403)
 
     const body = await req.json()
     if (!body.name || !body.slug || !body.city) {

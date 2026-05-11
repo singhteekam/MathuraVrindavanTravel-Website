@@ -26,12 +26,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 }
 
-// PUT /api/places/[slug] — admin only
+// PUT /api/places/[slug] — superadmin only
 export async function PUT(req: NextRequest, { params }: Params) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'superadmin') return errorResponse('Forbidden. Superadmin access required.', 403)
 
     const { slug } = await params
     const body     = await req.json()
@@ -53,12 +53,12 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
 }
 
-// DELETE /api/places/[slug] — admin only, hard delete
+// DELETE /api/places/[slug] — superadmin only, hard delete
 export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'superadmin') return errorResponse('Forbidden. Superadmin access required.', 403)
 
     const { slug } = await params
     await connectDB()

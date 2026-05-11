@@ -123,7 +123,7 @@ export async function GET(req: NextRequest) {
       const driverDoc = await Driver.findOne({ userId: user.id }).select('_id').lean()
       if (!driverDoc) return successResponse({ data: [], pagination: { page: 1, limit, total: 0, pages: 0 } })
       filter.driver = driverDoc._id
-    } else if (user.role !== 'admin') {
+    } else if (user.role !== 'admin' && user.role !== 'superadmin') {
       // Customers see only their own
       filter.customer = user.id
     }

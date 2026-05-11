@@ -16,7 +16,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'admin' && user?.role !== 'superadmin') return errorResponse('Forbidden.', 403)
 
     const { id }         = await params
     const { isApproved } = await req.json()
@@ -54,7 +54,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'admin' && user?.role !== 'superadmin') return errorResponse('Forbidden.', 403)
 
     const { id } = await params
     await connectDB()

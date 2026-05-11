@@ -31,6 +31,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     // Customers can only view their own bookings
     if (
       user.role !== 'admin' &&
+      user.role !== 'superadmin' &&
       user.role !== 'driver' &&
       booking.customer.toString() !== user.id
     ) {
@@ -59,29 +60,27 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const booking = await Booking.findOne({ bookingId })
     if (!booking) return errorResponse('Booking not found.', 404)
 
-    // Admin can update anything
-    if (user.role === 'admin') {
-      const allowed = ['status', 'driver', 'adminNotes', 'paymentStatus', 'cancelReason']
-      allowed.forEach((key) => {
-        if (body[key] !== undefined) {
-          // (booking as Record<string, unknown>)[key] = body[key]
-          booking.set('status', body.status)
-          booking.set('driver', body.driver)
-        }
-      })
+    // Admin and superadmin can update specific allowed fields
+    if (user.role === 'admin' || user.role === 'superadmin') {
+      // Use Mongoose .set() to avoid TypeScript index signature errors
+      if (body.status        !== undefined) booking.set('status',        body.status)
+      if (body.driver        !== undefined) booking.set('driver',        body.driver)
+      if (body.adminNotes    !== undefined) booking.set('adminNotes',    body.adminNotes)
+      if (body.paymentStatus !== undefined) booking.set('paymentStatus', body.paymentStatus)
+      if (body.cancelReason  !== undefined) booking.set('cancelReason',  body.cancelReason)
     }
-    // Driver can only update trip status
+    // Driver can only update trip status to ongoing or completed
     else if (user.role === 'driver') {
       const driverStatuses = ['ongoing', 'completed']
       if (body.status && driverStatuses.includes(body.status)) {
-        booking.status = body.status
+        booking.set('status', body.status)
       }
     }
     // Customer can cancel their own booking
     else if (booking.customer.toString() === user.id) {
       if (body.status === 'cancelled') {
-        booking.status       = 'cancelled'
-        booking.cancelReason = body.cancelReason ?? 'Cancelled by customer'
+        booking.set('status',       'cancelled')
+        booking.set('cancelReason', body.cancelReason ?? 'Cancelled by customer')
       }
     } else {
       return errorResponse('Forbidden.', 403)

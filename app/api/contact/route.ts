@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { connectDB } from '@/lib/db'
 import Contact from '@/models/Contact'
 import { sendEnquiryNotification } from '@/lib/email'
@@ -41,6 +43,10 @@ export async function POST(req: NextRequest) {
 // GET /api/contact — admin only, list all enquiries
 export async function GET(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    const user    = session?.user as { role?: string } | undefined
+    if (user?.role !== 'admin' && user?.role !== 'superadmin') return errorResponse('Forbidden.', 403)
+
     await connectDB()
 
     const { searchParams } = new URL(req.url)

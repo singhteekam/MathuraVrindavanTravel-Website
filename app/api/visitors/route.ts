@@ -1,107 +1,129 @@
-import { NextRequest }  from 'next/server'
-import { connectDB }    from '@/lib/db'
-import Visitor          from '@/models/Visitor'
+import { NextRequest } from 'next/server'
+import { connectDB } from '@/lib/db'
+import Visitor from '@/models/Visitor'
 import { successResponse, errorResponse } from '@/lib/apiResponse'
 
-// Today's date string — YYYY-MM-DD (IST)
-function todayIST(): string {
-  return new Date().toLocaleDateString('en-CA', {
+function getPeriodKeysIST() {
+  const today = new Date().toLocaleDateString('en-CA', {
     timeZone: 'Asia/Kolkata',
   })
+  const [year, month, day] = today.split('-').map(Number)
+  const dateOnly = new Date(Date.UTC(year, month - 1, day))
+  const daysSinceMonday = (dateOnly.getUTCDay() + 6) % 7
+  dateOnly.setUTCDate(dateOnly.getUTCDate() - daysSinceMonday)
+
+  return {
+    today,
+    weekKey: dateOnly.toISOString().slice(0, 10),
+    monthKey: today.slice(0, 7),
+  }
 }
 
-// GET /api/visitors — returns current counts (public, cached 5 min)
+function visitorCounts(visitor: {
+  totalCount: number
+  todayCount: number
+  weeklyCount: number
+  monthlyCount: number
+}) {
+  return {
+    total: visitor.totalCount,
+    today: visitor.todayCount,
+    weekly: visitor.weeklyCount,
+    monthly: visitor.monthlyCount,
+  }
+}
+
+async function getCurrentVisitorCounter() {
+  const periods = getPeriodKeysIST()
+  let visitor = await Visitor.findOne()
+
+  if (!visitor) {
+    return Visitor.create({
+      totalCount: 0,
+      todayCount: 0,
+      todayDate: periods.today,
+      weekKey: periods.weekKey,
+      monthKey: periods.monthKey,
+      weeklyCount: 0,
+      monthlyCount: 0,
+      lastUpdated: new Date(),
+    })
+  }
+
+  const resetFields: Record<string, string | number> = {}
+
+  if (visitor.todayDate !== periods.today) {
+    resetFields.todayCount = 0
+    resetFields.todayDate = periods.today
+  }
+
+  if (visitor.weekKey !== periods.weekKey) {
+    resetFields.weeklyCount = 0
+    resetFields.weekKey = periods.weekKey
+  }
+
+  if (visitor.monthKey !== periods.monthKey) {
+    resetFields.monthlyCount = 0
+    resetFields.monthKey = periods.monthKey
+  }
+
+  if (Object.keys(resetFields).length > 0) {
+    visitor = await Visitor.findByIdAndUpdate(
+      visitor._id,
+      { $set: resetFields },
+      { new: true },
+    ) ?? visitor
+  }
+
+  return visitor
+}
+
 export async function GET() {
   try {
     await connectDB()
 
-    // Get or create the single counter document
-    let visitor = await Visitor.findOne()
-    if (!visitor) {
-      visitor = await Visitor.create({
-        totalCount:   0,
-        todayCount:   0,
-        todayDate:    todayIST(),
-        weeklyCount:  0,
-        monthlyCount: 0,
-      })
-    }
+    const visitor = await getCurrentVisitorCounter()
 
-    return successResponse({
-      total:   visitor.totalCount,
-      today:   visitor.todayCount,
-      weekly:  visitor.weeklyCount,
-      monthly: visitor.monthlyCount,
-    })
+    return successResponse(visitorCounts(visitor))
   } catch (err) {
     console.error('[GET /api/visitors]', err)
     return errorResponse('Internal server error.', 500)
   }
 }
 
-// POST /api/visitors — called once per unique visitor session
-// Client tracks uniqueness via localStorage (visitorId + date)
 export async function POST(req: NextRequest) {
   try {
     await connectDB()
 
-    const body     = await req.json().catch(() => ({}))
-    const isNew    = body.isNew === true   // only true on genuinely new visitors
+    const body = await req.json().catch(() => ({}))
+    const isNew = body.isNew === true
+    const visitor = await getCurrentVisitorCounter()
 
     if (!isNew) {
-      // Not a new visit — just return current counts without incrementing
-      const visitor = await Visitor.findOne()
-      return successResponse({
-        total:   visitor?.totalCount  ?? 0,
-        today:   visitor?.todayCount  ?? 0,
-        weekly:  visitor?.weeklyCount ?? 0,
-        monthly: visitor?.monthlyCount?? 0,
-      })
+      return successResponse(visitorCounts(visitor))
     }
 
-    const today    = todayIST()
-    let visitor    = await Visitor.findOne()
-
-    if (!visitor) {
-      // First ever visitor — create document
-      visitor = await Visitor.create({
-        totalCount:   1,
-        todayCount:   1,
-        todayDate:    today,
-        weeklyCount:  1,
-        monthlyCount: 1,
-        lastUpdated:  new Date(),
-      })
-    } else {
-      // Check if the date rolled over — reset daily counter
-      const isNewDay = visitor.todayDate !== today
-
-      await Visitor.findByIdAndUpdate(visitor._id, {
+    const periods = getPeriodKeysIST()
+    const updatedVisitor = await Visitor.findByIdAndUpdate(
+      visitor._id,
+      {
         $inc: {
-          totalCount:   1,
-          todayCount:   isNewDay ? 0 : 1,   // reset below if new day
-          weeklyCount:  1,
+          totalCount: 1,
+          todayCount: 1,
+          weeklyCount: 1,
           monthlyCount: 1,
         },
-        ...(isNewDay && {
-          $set: {
-            todayCount:  1,
-            todayDate:   today,
-          },
-        }),
-        lastUpdated: new Date(),
-      })
+        $set: {
+          todayDate: periods.today,
+          weekKey: periods.weekKey,
+          monthKey: periods.monthKey,
+          lastUpdated: new Date(),
+        },
+      },
+      { new: true },
+    )
 
-      // Re-fetch for accurate response
-      visitor = await Visitor.findById(visitor._id)
-    }
-
-    return successResponse({
-      total:   visitor!.totalCount,
-      today:   visitor!.todayCount,
-      weekly:  visitor!.weeklyCount,
-      monthly: visitor!.monthlyCount,
-    })
+    return successResponse(visitorCounts(updatedVisitor ?? visitor))
   } catch (err) {
     console.error('[POST /api/visitors]', err)
     return errorResponse('Internal server error.', 500)

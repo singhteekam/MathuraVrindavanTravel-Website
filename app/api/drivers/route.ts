@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'admin' && user?.role !== 'superadmin') return errorResponse('Forbidden.', 403)
 
     await connectDB()
 
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'admin' && user?.role !== 'superadmin') return errorResponse('Forbidden.', 403)
 
     const body = await req.json()
     const { name, email, phone, password, licenseNumber, vehicle } = body

@@ -21,6 +21,13 @@ export async function GET(req: NextRequest) {
 
     const filter: Record<string, unknown> = all ? {} : { isApproved: true }
     if (packageId) filter.package = packageId
+    if (all) {
+      const session = await getServerSession(authOptions)
+      const user    = session?.user as { role?: string } | undefined
+      if (user?.role !== 'admin' && user?.role !== 'superadmin') {
+        return errorResponse('Forbidden.', 403)
+      }
+    }
 
     const [reviews, total] = await Promise.all([
       Review.find(filter)

@@ -18,11 +18,12 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const page   = Number(searchParams.get('page')  ?? 1)
     const limit  = Number(searchParams.get('limit') ?? 20)
-    const role   = searchParams.get('role')   ?? 'customer'
+    const requestedRole = searchParams.get('role')
+    const role   = user.role === 'admin' ? 'customer' : requestedRole
     const search = searchParams.get('search') ?? ''
     const skip   = (page - 1) * limit
 
-    const filter: Record<string, unknown> = { role }
+    const filter: Record<string, unknown> = role ? { role } : {}
 
     if (search.trim()) {
       filter.$or = [
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest) {
     ])
 
     // Attach booking counts for customers
-    if (role === 'customer') {
+    if (!role || role === 'customer') {
       const userIds = users.map((u) => u._id)
       const counts  = await Booking.aggregate([
         { $match: { customer: { $in: userIds } } },
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest) {
       const countMap = Object.fromEntries(counts.map((c) => [c._id.toString(), c.count]))
       const enriched = users.map((u) => ({
         ...u,
-        bookingCount: countMap[u._id.toString()] ?? 0,
+        bookingCount: u.role === 'customer' ? (countMap[u._id.toString()] ?? 0) : undefined,
       }))
       return paginatedResponse(enriched, page, limit, total)
     }

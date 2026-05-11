@@ -14,6 +14,11 @@ const SettingsSchema = new mongoose.Schema({
   bookingConfig: { type: mongoose.Schema.Types.Mixed, default: {} },
 }, { timestamps: true })
 
+interface SettingsDoc {
+  siteInfo?: unknown
+  emailConfig?: unknown
+}
+
 function getSettingsModel() {
   return mongoose.models.Settings ?? mongoose.model('Settings', SettingsSchema)
 }
@@ -23,7 +28,7 @@ export async function GET(_req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'admin' && user?.role !== 'superadmin') return errorResponse('Forbidden.', 403)
 
     await connectDB()
     const Settings = getSettingsModel()
@@ -40,13 +45,15 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'admin' && user?.role !== 'superadmin') return errorResponse('Forbidden.', 403)
 
     const body = await req.json()
     const { siteInfo, emailConfig, bookingConfig } = body
 
     await connectDB()
     const Settings = getSettingsModel()
+    const existingSettings = await Settings.findOne({ key: 'site' }).lean() as SettingsDoc | null
+    const isSuperAdmin = user.role === 'superadmin'
 
     // Upsert the singleton settings document
     const settings = await Settings.findOneAndUpdate(
@@ -54,13 +61,15 @@ export async function POST(req: NextRequest) {
       {
         $set: {
           key: 'site',
-          siteInfo:      siteInfo      ?? {},
+          siteInfo:      isSuperAdmin ? (siteInfo ?? {}) : (existingSettings?.siteInfo ?? {}),
           // Never persist raw passwords in DB — only save non-sensitive parts
-          emailConfig:   {
-            smtpHost: emailConfig?.smtpHost ?? '',
-            smtpPort: emailConfig?.smtpPort ?? '587',
-            // smtpUser and smtpPass stay in Vercel env vars — not stored in DB
-          },
+          emailConfig:   isSuperAdmin
+            ? {
+                smtpHost: emailConfig?.smtpHost ?? '',
+                smtpPort: emailConfig?.smtpPort ?? '587',
+                // smtpUser and smtpPass stay in Vercel env vars — not stored in DB
+              }
+            : (existingSettings?.emailConfig ?? {}),
           bookingConfig: bookingConfig ?? {},
         },
       },

@@ -22,8 +22,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const driver = await Driver.findById(driverId).lean()
     if (!driver) return errorResponse('Driver not found.', 404)
 
-    // Driver can only see their own profile; admin can see all
-    if (user.role !== 'admin' && driver.userId.toString() !== user.id) {
+    // Driver can only see their own profile; admin and superadmin can see all
+    if (user.role !== 'admin' && user.role !== 'superadmin' && driver.userId.toString() !== user.id) {
       return errorResponse('Forbidden.', 403)
     }
 
@@ -34,7 +34,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 }
 
-// PATCH /api/drivers/[driverId] — driver updates availability; admin can verify
+// PATCH /api/drivers/[driverId] — driver updates availability; admin/superadmin can verify
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const session = await getServerSession(authOptions)
@@ -50,7 +50,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (!driver) return errorResponse('Driver not found.', 404)
 
     const isOwnProfile = driver.userId.toString() === user.id
-    const isAdmin      = user.role === 'admin'
+    const isAdmin      = user.role === 'admin' || user.role === 'superadmin'
 
     if (!isOwnProfile && !isAdmin) return errorResponse('Forbidden.', 403)
 
@@ -78,7 +78,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'admin' && user?.role !== 'superadmin') return errorResponse('Forbidden.', 403)
 
     const { driverId } = await params
     await connectDB()

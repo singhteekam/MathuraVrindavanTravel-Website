@@ -31,7 +31,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'admin' && user?.role !== 'superadmin') return errorResponse('Forbidden.', 403)
 
     const { slug } = await params
     const body     = await req.json()
@@ -58,7 +58,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const session = await getServerSession(authOptions)
     const user    = session?.user as { role?: string } | undefined
-    if (user?.role !== 'admin') return errorResponse('Forbidden.', 403)
+    if (user?.role !== 'admin' && user?.role !== 'superadmin') return errorResponse('Forbidden.', 403)
 
     const { slug } = await params
     await connectDB()

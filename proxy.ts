@@ -19,7 +19,7 @@ const MAINTENANCE_BYPASS_PREFIXES = [
 // ─── Main middleware ──────────────────────────────────────────────────────────
 // We export a custom function instead of withAuth directly so we can run the
 // maintenance check BEFORE next-auth's auth logic.
-export default async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname
 
   // ── 1. Maintenance mode check ─────────────────────────────────────────────

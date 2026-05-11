@@ -8,6 +8,7 @@ import {
   AlertCircle, RefreshCw, Plus, Eye,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import StatCard from '@/components/admin/StatCard'
 import AdminPageHeader from '@/components/admin/AdminPageHeader'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -39,15 +40,18 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; 
 
 const QUICK_ACTIONS = [
   { label: 'Add Package',  href: '/admin/packages/new',  icon: <Plus size={16} />, color: '#ff7d0f', bg: '#fff8ed' },
-  { label: 'Add Place',    href: '/admin/places/new',    icon: <Plus size={16} />, color: '#4338ca', bg: '#eef2ff' },
+  { label: 'Add Place',    href: '/admin/places/new',    icon: <Plus size={16} />, color: '#4338ca', bg: '#eef2ff', superadminOnly: true },
   { label: 'Add Driver',   href: '/admin/drivers/new',   icon: <Plus size={16} />, color: '#16a34a', bg: '#f0fdf4' },
   { label: 'View Bookings',href: '/admin/bookings',      icon: <Eye  size={16} />, color: '#db2777', bg: '#fdf2f8' },
 ]
 
 export default function AdminDashboardClient() {
+  const { data: session }  = useSession()
   const [stats,   setStats]   = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState('')
+  const role = (session?.user as { role?: string } | undefined)?.role
+  const quickActions = QUICK_ACTIONS.filter((action) => !action.superadminOnly || role === 'superadmin')
 
   useEffect(() => {
     fetch('/api/admin/stats')
@@ -257,7 +261,7 @@ export default function AdminDashboardClient() {
       >
         <h3 className="font-bold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {QUICK_ACTIONS.map((action) => (
+          {quickActions.map((action) => (
             <Link
               key={action.href}
               href={action.href}

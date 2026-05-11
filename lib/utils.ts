@@ -14,12 +14,17 @@ export function formatCurrency(amount: number): string {
   }).format(amount)
 }
 
-export function formatDate(date: Date | string): string {
+export function formatDate(date?: Date | string | number | null): string {
+  if (!date) return 'Not available'
+
+  const parsed = date instanceof Date ? date : new Date(date)
+  if (Number.isNaN(parsed.getTime())) return 'Not available'
+
   return new Intl.DateTimeFormat('en-IN', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  }).format(new Date(date))
+  }).format(parsed)
 }
 
 export function slugify(text: string): string {

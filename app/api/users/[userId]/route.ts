@@ -77,6 +77,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
     const found = await User.findById(userId).select('-password').lean()
     if (!found) return errorResponse('User not found.', 404)
+    if (user?.role === 'admin' && found.role !== 'customer') {
+      return errorResponse('Forbidden.', 403)
+    }
 
     return successResponse(found)
   } catch (err) {

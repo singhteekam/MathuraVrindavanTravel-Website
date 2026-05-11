@@ -25,7 +25,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     if (!driver) return errorResponse('Driver not found.', 404)
 
     const isOwnProfile = driver.userId.toString() === user.id
-    if (!isOwnProfile && user.role !== 'admin') {
+    if (!isOwnProfile && user.role !== 'admin' && user.role !== 'superadmin') {
       return errorResponse('Forbidden.', 403)
     }
 

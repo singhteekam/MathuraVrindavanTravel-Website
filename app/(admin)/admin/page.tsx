@@ -12,7 +12,9 @@ export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions)
   const user    = session?.user as { role?: string } | undefined
 
-  if (!session || user?.role !== 'admin') redirect('/login?error=unauthorized')
+  if (!session || (user?.role !== 'admin' && user?.role !== 'superadmin')) {
+    redirect('/login?error=unauthorized')
+  }
 
   return <AdminDashboardClient />
 }
