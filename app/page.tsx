@@ -49,7 +49,7 @@ function BookingNotice() {
             <div>
               <p className="text-sm font-bold text-amber-900">Important Notice</p>
               <p className="text-sm leading-relaxed text-amber-800">
-                App booking features are currently unavailable. Online booking will be available from 15 May 2026.
+                App booking features are currently unavailable. Online booking will be available from 18 May 2026.
                 Until then, please book your tour through WhatsApp.
               </p>
             </div>
